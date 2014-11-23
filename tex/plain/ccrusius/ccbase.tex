@@ -1,0 +1,83 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% \PRAGMAONCE
+%
+% Usage: \pragmaonce<id>
+%
+% Expands to \endinput after the first time it is called. Used to make sure
+% files are not included twice. See an example immediately after this
+% definition.
+%
+% We define this before anything else because we want to use it immediately.
+%
+\def\pragmaonce#1{
+  \csname pragmaonce@#1\endcsname%
+  \global\expandafter\let\csname pragmaonce@#1\endcsname=\endinput
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pragmaonce{ccbase}
+\message{File `ccbase.tex' v1.00 \space\space <2014/11/23>}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CATCODES
+%
+% Directly from 'tugboat.cmn'
+%
+%  The following allow for easier changes of category.  These require that
+%  the character be addressed as a control-sequence: e.g. \makeescape\/ will
+%  make the / an escape character.
+\def\makeescape#1{\catcode`#1=0 }
+\def\makebgroup#1{\catcode`#1=1 }
+\def\makeegroup#1{\catcode`#1=2 }
+\def\makemath#1{\catcode`#1=3 }
+\def\makealign#1{\catcode`#1=4 }
+\def\makeeol#1{\catcode`#1=5 }
+\def\makeparm#1{\catcode`#1=6 }
+\def\makesup#1{\catcode`#1=7 }
+\def\makesub#1{\catcode`#1=8 }
+\def\makeignore#1{\catcode`#1=9 }
+\def\makespace#1{\catcode`#1=10 }
+\def\makeletter#1{\catcode`#1=11 }
+\def\makeother#1{\catcode`#1=12 }
+\def\makeactive#1{\catcode`#1=13 }
+\def\makecomment#1{\catcode`#1=14 }
+
+\def\makeatletter{\catcode`\@=11 }      % included for historical reasons
+\chardef\other=12
+\def\makeatother{\catcode`\@=\other}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% LUACODE
+%
+% Usage: \luacode <lua code> \endluacode
+%
+% Directly from LuaTeX's "Writing Lua in TeX," using the catcode routines
+% defined above.
+%
+% To syntax highlight Lua code inside TeX, create a
+% $VIMFILES/after/syntax/plaintex.vim file with the following contents:
+%
+%   unlet b:current_syntax
+%   syn include @LUA syntax/lua.vim
+%
+%   syn region luatex matchgroup=contextIdentifier
+%       \ start='\\luacode'
+%       \ end='\\endluacode'
+%       \ contains=@LUA
+%
+\def\luacode{%
+  \bgroup
+  \makeother\{
+  \makeother\{
+  \makeother\^^M
+  \makeother\#
+  \makeother\~
+  \makeother\%
+  \doluacode
+}
+\bgroup
+\makeother\^^M %
+\long\gdef\doluacode#1^^M#2\endluacode{\directlua{#2}\egroup}%
+\egroup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\endinput
