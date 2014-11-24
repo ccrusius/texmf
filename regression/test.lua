@@ -2,7 +2,7 @@ local luaunit = dofile "./luaunit/luaunit.lua"
 
 function doluatex(filename)
     print("luatex "..filename)
-    return os.execute("luatex -halt-on-error -interaction=scrollmode "..filename)
+    return os.execute("luatex -halt-on-error -interaction=batchmode "..filename)
 end
 
 function dobibtex(filename)
@@ -38,17 +38,6 @@ end
 
 function test_ccbase01()
     logtest("ccbase01")
-end
-
-function test_ccbib01()
-    local filename = "ccbib01"
-    assert(doluatex(filename)==true)
-    assert(dobibtex(filename)==true)
-    assert(haslines(filename..".bbl",filename..".ref")==true)
-    os.remove(filename..".aux")
-    os.remove(filename..".bbl")
-    os.remove(filename..".blg")
-    os.remove(filename..".pdf")
 end
 
 lu = LuaUnit.new()
