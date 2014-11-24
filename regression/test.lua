@@ -1,17 +1,16 @@
 local luaunit = dofile "./luaunit/luaunit.lua"
 
--- doluatex
---
--- Call luatex on the given file
---
 function doluatex(filename)
-    return os.execute("luatex -halt-on-error -interaction=batchmode "..filename)
+    print("luatex "..filename)
+    return os.execute("luatex -halt-on-error -interaction=scrollmode "..filename)
+end
+
+function dobibtex(filename)
+    print("bibtex "..filename)
+    return os.execute("bibtex -terse "..filename)
 end
 
 function haslines(cmpfile,reffile)
-    print("Reference file: "..reffile)
-    print("Comparisoin file: "..cmpfile)
-
     local reff=io.open(reffile)
     local cmpf=io.open(cmpfile)
     local cmpl=cmpf:lines()
@@ -39,6 +38,17 @@ end
 
 function test_ccbase01()
     logtest("ccbase01")
+end
+
+function test_ccbib01()
+    local filename = "ccbib01"
+    assert(doluatex(filename)==true)
+    assert(dobibtex(filename)==true)
+    assert(haslines(filename..".bbl",filename..".ref")==true)
+    os.remove(filename..".aux")
+    os.remove(filename..".bbl")
+    os.remove(filename..".blg")
+    os.remove(filename..".pdf")
 end
 
 lu = LuaUnit.new()
