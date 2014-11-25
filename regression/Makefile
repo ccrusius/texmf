@@ -1,2 +1,6 @@
+export max_print_line:=65536
+export error_line:=254
+export half_error_line:=238
+
 all:
-	env max_print_line=65536 error_line=254 half_error_line=238 lua test.lua
+	lua test.lua

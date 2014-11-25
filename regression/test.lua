@@ -1,37 +1,45 @@
 local luaunit = dofile "./luaunit/luaunit.lua"
 
-function doluatex(filename)
+local function startswith(str,start)
+  return (string.find(str,start,1,true) == 1)
+end
+
+local function doluatex(filename)
     print("luatex "..filename)
-    return os.execute("luatex -halt-on-error -interaction=batchmode "..filename)
+    local status = os.execute("luatex -halt-on-error -interaction=batchmode "..filename)
+    if status == 0 then status = true end -- Windows
+    return status
 end
 
-function dobibtex(filename)
+local function dobibtex(filename)
     print("bibtex "..filename)
-    return os.execute("bibtex -terse "..filename)
+    local status = os.execute("bibtex -terse "..filename)
+    if status == 0 then status = true end -- Windows
+    return status
 end
 
-function haslines(cmpfile,reffile)
-    local reff=io.open(reffile)
-    local cmpf=io.open(cmpfile)
-    local cmpl=cmpf:lines()
+local function haslines(cmpfile,reffile)
+    local reff,cmpf,msg
+    reff,msg=io.open(reffile) assert(reff,msg)
+    cmpf,msg=io.open(cmpfile) assert(cmpf,msg)
+
+    local nextcmp=cmpf:lines()
 
     for need in reff:lines() do
-        local found = false
         repeat
-            local has = cmpl()
-            if has == need then found = true end
-        until has == nil or found == true
-        if found == false then
-            reff.close()
+          local has = nextcmp()
+          if not has then
+            io.close(reff)
             print("MISSING LINE\n"..need)
             return false
-        end
+          end
+        until startswith(has,need)
     end
-    cmpf.close()
+    io.close(cmpf)
     return true
 end
 
-function logtest(filename)
+local function logtest(filename)
     assert(doluatex(filename)==true)
     assert(haslines(filename..".log",filename..".ref")==true)
 end

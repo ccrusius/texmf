@@ -12,6 +12,11 @@
 % Some adapted from Patrick Gundlach's viznodelist.lua.
 %
 \luacode
+local function nzformat(fmt,value)
+  if value == 0 then return "" end
+  return string.format(fmt,value)
+end
+
 local function showglue(n,depth,prefix)
   local s=n.spec
   local t=prefix..string.format("glue %gpt",s.width/2^16)
@@ -27,27 +32,31 @@ local function showglue(n,depth,prefix)
     else t = t..string.format("fi%s",string.rep("l",s.shrink_order-1))
     end
   end
+  if not s.writable then t = t.." ro" end
   texio.write_nl(t)
 end
 
 local function showglyph(n,depth,prefix)
   texio.write_nl(prefix..string.format(
-    "glyph char=%q lang=%d font=%d width=%gpt",
+    "glyph %q lang=%d font=%d width=%gpt",
     unicode.utf8.char(n.char),
     n.lang, n.font, n.width/2^16))
 end
 
 local function showkern(n,depth,prefix)
-  texio.write_nl(prefix..string.format("kern kern=%gpt",n.kern/2^16))
+  texio.write_nl(prefix..string.format("kern %gpt",n.kern/2^16))
 end
 
 local shownode -- forward declaration
 local function showlist(n,depth,prefix,name)
-  texio.write_nl(prefix..name.." "..string.format(
-    "width=%gpt height=%gpt depth=%gpt glue_set=%d glue_sign=%d glue_order=%d shift=%gpt",
-    n.width/2^16, n.height/2^16, n.depth/2^16,
-    n.glue_set, n.glue_sign, n.glue_order,
-    n.shift/2^16))
+  local t = prefix..name..string.format(
+    " %gpt x (%gpt+%gpt)",
+    n.width/2^16, n.height/2^16, n.depth/2^16)
+  t = t..nzformat(" glue_set=%d",n.glue_set)
+  t = t..nzformat(" glue_sign=%d",n.glue_sign)
+  t = t..nzformat(" glue_order=%d",n.glue_order)
+  t = t..nzformat(" shift=%gpt",n.shift/2^16)
+  texio.write_nl(t)
   local h = n.head
   while h do
     shownode(h,depth-1,prefix..".")
