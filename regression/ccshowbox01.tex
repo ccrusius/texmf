@@ -1,6 +1,14 @@
 \input ccshowbox
 
-\setbox0=\hbox{Abc\vbox{\hbox{def"}}ghi}
+\setbox0=\hbox{%
+Abc\vbox{\hrule depth.2pt\hbox{def"}}%
+\hskip 2pt plus 1pt minus 1pt%
+ghi%
+\vrule width 3pt%
+\hskip -1pt%
+\hfil%
+\hfill%
+}
 \typeout{DEPTH 1} \ccshowbox{0}{1}
 \typeout{DEPTH 10}\ccshowbox{0}{10}
 

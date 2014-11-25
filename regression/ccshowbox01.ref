@@ -1,26 +1,36 @@
 DEPTH 1
-hlist width=49.1668pt height=6.94444pt depth=1.94444pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+hlist width=53.1668pt height=7.54443pt depth=1.94444pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
 .glyph char="A" lang=0 font=1 width=7.50002pt
 .glyph char="b" lang=0 font=1 width=5.55557pt
 .kern kern=0.277786pt
 .glyph char="c" lang=0 font=1 width=4.44444pt
-.vlist width=18.0556pt height=6.94444pt depth=0pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+.vlist width=18.0556pt height=7.54443pt depth=0pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+.glue 2pt plus 1pt minus 1pt
 .glyph char="g" lang=0 font=1 width=5.00002pt
 .glyph char="h" lang=0 font=1 width=5.55557pt
 .glyph char="i" lang=0 font=1 width=2.77779pt
+.rule width=3pt
+.glue -1pt
+.glue 0pt plus 1fil
+.glue 0pt plus 1fill
 DEPTH 10
-hlist width=49.1668pt height=6.94444pt depth=1.94444pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+hlist width=53.1668pt height=7.54443pt depth=1.94444pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
 .glyph char="A" lang=0 font=1 width=7.50002pt
 .glyph char="b" lang=0 font=1 width=5.55557pt
 .kern kern=0.277786pt
 .glyph char="c" lang=0 font=1 width=4.44444pt
-.vlist width=18.0556pt height=6.94444pt depth=0pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+.vlist width=18.0556pt height=7.54443pt depth=0pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
+..rule height=0.399994pt depth=0.199997pt
 ..hlist width=18.0556pt height=6.94444pt depth=0pt glue_set=0 glue_sign=0 glue_order=0 shift=0pt
 ...glyph char="d" lang=0 font=1 width=5.55557pt
 ...glyph char="e" lang=0 font=1 width=4.44444pt
 ...glyph char="f" lang=0 font=1 width=3.05557pt
 ...glyph char="\"" lang=0 font=1 width=5.00002pt
+.glue 2pt plus 1pt minus 1pt
 .glyph char="g" lang=0 font=1 width=5.00002pt
 .glyph char="h" lang=0 font=1 width=5.55557pt
-.glyph char="i" lang=0 font=1 width=2.77779pt)
-
+.glyph char="i" lang=0 font=1 width=2.77779pt
+.rule width=3pt
+.glue -1pt
+.glue 0pt plus 1fil
+.glue 0pt plus 1fill)

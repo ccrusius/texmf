@@ -9,8 +9,26 @@
 %
 % CCSHOWBOX LUA MODULE
 %
+% Some adapted from Patrick Gundlach's viznodelist.lua.
+%
 \luacode
-local shownode -- forward declaration
+local function showglue(n,depth,prefix)
+  local s=n.spec
+  local t=prefix..string.format("glue %gpt",s.width/2^16)
+  if s.stretch ~= 0 then
+    t = t..string.format(" plus %g",s.stretch/2^16)
+    if s.stretch_order == 0 then t = t.."pt"
+    else t = t..string.format("fi%s",string.rep("l",s.stretch_order-1))
+    end
+  end
+  if s.shrink ~= 0 then
+    t = t..string.format(" minus %g",s.shrink/2^16)
+    if s.shrink_order == 0 then t = t.."pt"
+    else t = t..string.format("fi%s",string.rep("l",s.shrink_order-1))
+    end
+  end
+  texio.write_nl(t)
+end
 
 local function showglyph(n,depth,prefix)
   texio.write_nl(prefix..string.format(
@@ -23,6 +41,7 @@ local function showkern(n,depth,prefix)
   texio.write_nl(prefix..string.format("kern kern=%gpt",n.kern/2^16))
 end
 
+local shownode -- forward declaration
 local function showlist(n,depth,prefix,name)
   texio.write_nl(prefix..name.." "..string.format(
     "width=%gpt height=%gpt depth=%gpt glue_set=%d glue_sign=%d glue_order=%d shift=%gpt",
@@ -38,10 +57,25 @@ end
 local function showhlist(n,depth,prefix) showlist(n,depth,prefix,"hlist") end
 local function showvlist(n,depth,prefix) showlist(n,depth,prefix,"vlist") end
 
+local function showrule(n,depth,prefix)
+  local function p(t,v)
+    if v == -1073741824 then return ""
+    else return t..string.format("%gpt",v/2^16)
+    end
+  end
+  texio.write_nl(prefix
+    .."rule"
+    ..p(" width=",n.width)
+    ..p(" height=",n.height)
+    ..p(" depth=",n.depth))
+end
+
 local showfn = {
+  [ccbase.GLUE_TYPE]  = showglue,
   [ccbase.GLYPH_TYPE] = showglyph,
   [ccbase.HLIST_TYPE] = showhlist,
   [ccbase.KERN_TYPE]  = showkern,
+  [ccbase.RULE_TYPE]  = showrule,
   [ccbase.VLIST_TYPE] = showvlist,
 }
 
