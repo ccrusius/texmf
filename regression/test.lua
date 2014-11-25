@@ -36,9 +36,8 @@ function logtest(filename)
     assert(haslines(filename..".log",filename..".ref")==true)
 end
 
-function test_ccbase01()
-    logtest("ccbase01")
-end
+function test_ccbase01()    logtest("ccbase01") end
+function test_ccshowbox01() logtest("ccshowbox01") end
 
 lu = LuaUnit.new()
 os.exit(lu:runSuite())
