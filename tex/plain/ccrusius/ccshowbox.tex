@@ -1,0 +1,69 @@
+%% @texfile{
+%%   author = "Cesar Crusius",
+%%   filename = "ccshowbox.tex",
+%%   docstring = "LuaTeX-based \showbox",
+%% }
+\input ccbase
+\pragmaonce{ccshowbox}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CCSHOWBOX LUA MODULE
+%
+\luacode
+local shownode -- forward declaration
+
+local function showglyph(n,depth,prefix)
+  texio.write_nl(prefix..string.format(
+    "glyph char=%q lang=%d font=%d width=%gpt",
+    unicode.utf8.char(n.char),
+    n.lang, n.font, n.width/2^16))
+end
+
+local function showkern(n,depth,prefix)
+  texio.write_nl(prefix..string.format("kern kern=%gpt",n.kern/2^16))
+end
+
+local function showlist(n,depth,prefix,name)
+  texio.write_nl(prefix..name.." "..string.format(
+    "width=%gpt height=%gpt depth=%gpt glue_set=%d glue_sign=%d glue_order=%d shift=%gpt",
+    n.width/2^16, n.height/2^16, n.depth/2^16,
+    n.glue_set, n.glue_sign, n.glue_order,
+    n.shift/2^16))
+  local h = n.head
+  while h do
+    shownode(h,depth-1,prefix..".")
+    h = h.next
+  end
+end
+local function showhlist(n,depth,prefix) showlist(n,depth,prefix,"hlist") end
+local function showvlist(n,depth,prefix) showlist(n,depth,prefix,"vlist") end
+
+local showfn = {
+  [ccbase.GLYPH_TYPE] = showglyph,
+  [ccbase.HLIST_TYPE] = showhlist,
+  [ccbase.KERN_TYPE]  = showkern,
+  [ccbase.VLIST_TYPE] = showvlist,
+}
+
+function shownode(n,depth,prefix)
+  if depth < 0 then return end
+  f = showfn[n.id]
+  if f then
+    f(n,depth,prefix)
+  else
+    texio.write_nl(prefix.."Unknown node "..node.type(n.id))
+  end
+end
+
+local function showbox(box,depth)
+  if type(box) == "number" then box = tex.box[box] end
+  shownode(box,depth,"")
+end
+
+ccshowbox = {
+  showbox = showbox,
+}
+\endluacode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\ccshowbox#1#2{\directlua{ccshowbox.showbox(#1,#2)}}
+\endinput

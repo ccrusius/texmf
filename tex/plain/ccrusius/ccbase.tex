@@ -20,18 +20,19 @@
   \csname pragmaonce@#1\endcsname%
   \global\expandafter\let\csname pragmaonce@#1\endcsname=\endinput
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pragmaonce{ccbase}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % \TYPEOUT
 %
-% From LaTeX.
+% From LaTeX. Write message in a single line.
 %
 \def\typeout{\immediate\write17}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \typeout{File `ccbase.tex' <2014/11/23>}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Load Eplain format
+%
 \input eplain
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -42,6 +43,7 @@
 %  The following allow for easier changes of category.  These require that
 %  the character be addressed as a control-sequence: e.g. \makeescape\/ will
 %  make the / an escape character.
+%
 \def\makeescape#1{\catcode`#1=0 }
 \def\makebgroup#1{\catcode`#1=1 }
 \def\makeegroup#1{\catcode`#1=2 }
@@ -57,10 +59,6 @@
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
-
-\def\makeatletter{\catcode`\@=11 }      % included for historical reasons
-\chardef\other=12
-\def\makeatother{\catcode`\@=\other}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % LUACODE
@@ -81,10 +79,10 @@
 %       \ end='\\endluacode'
 %       \ contains=@LUA
 %
-\def\luacode{%
+\expandafter\def\csname luacode\endcsname{% \expandafter fixes vim syntax
   \bgroup
-  \makeother\{
-  \makeother\{
+  %\makeother\{
+  %\makeother\}
   \makeother\^^M
   \makeother\#
   \makeother\~
@@ -95,5 +93,33 @@
 \makeother\^^M %
 \long\gdef\doluacode#1^^M#2\endluacode{\directlua{#2}\egroup}%
 \egroup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% CCBASE LUA MODULE
+%
+\luacode
+--
+-- LuaTeX node ids
+--
+local GLUE_TYPE    = node.id("glue")
+local GLYPH_TYPE   = node.id("glyph")
+local HLIST_TYPE   = node.id("hlist")
+local KERN_TYPE    = node.id("kern")
+local MATH_TYPE    = node.id("math")
+local VLIST_TYPE   = node.id("vlist")
+local WHATSIT_TYPE = node.id("whatsit")
+--
+-- Export "ccbase" module
+--
+ccbase = {
+  GLUE_TYPE    = GLUE_TYPE,
+  GLYPH_TYPE   = GLYPH_TYPE,
+  HLIST_TYPE   = HLIST_TYPE,
+  KERN_TYPE    = KERN_TYPE,
+  MATH_TYPE    = MATH_TYPE,
+  VLIST_TYPE   = VLIST_TYPE,
+  WHATSIT_TYPE = WHATSIT_TYPE,
+}
+\endluacode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \endinput

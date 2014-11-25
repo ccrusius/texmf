@@ -1,0 +1,7 @@
+\input ccshowbox
+
+\setbox0=\hbox{Abc\vbox{\hbox{def"}}ghi}
+\typeout{DEPTH 1} \ccshowbox{0}{1}
+\typeout{DEPTH 10}\ccshowbox{0}{10}
+
+\bye
