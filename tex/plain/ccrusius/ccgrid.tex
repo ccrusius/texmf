@@ -9,6 +9,14 @@
 \directlua{ccgrid = dofile(kpse.find_file("ccgrid.lua"))}
 \makeatletter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Logging
+%
+\newcount\ccgridloglevel\ccgridloglevel=0
+\def\setccgridloglevel#1{%
+  \directlua{ccgrid.setloglevel(#1)}%
+  \global\ccgridloglevel=#1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \def\ccgrid@rounddown#1{
   \directlua{tex.print(ccbase.spstr(ccgrid.snapdown(ccbase.tosp("#1"))))}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -20,22 +28,22 @@
 \newtoks\ccgrid@prevoutput
 \ccgrid@prevoutput=\expandafter{\the\output}
 \output={%
-  \typeout{CCGRID OUTPUT BOX}
-  \ccshowbox{255}{1}
   %
   % A baseline grid for debugging. This is the best way to verify whether
   % or not this is working, what is and is not on the grid. This should be
   % enabled before accepting a final proof.
   %
-  \setbox0=\vbox to\vsize{
-    \hidehrulew{0.4pt}{0.2pt}{\hsize}
-    \vskip\topskip
-    \cleaders\vbox to\baselineskip{
-      \hidehrulew{.2pt}{.2pt}{\hsize}
-      \vfil%
-      \hidehrulew{.2pt}{.2pt}{\hsize}}
-    \vfill}
-  \setbox255=\vbox to\vsize{\vtop to0pt{\box0\vss}\hrule height 0pt\box255}
+  \ifnum\ccgridloglevel>0%
+    \setbox0=\vbox to\vsize{
+      \hidehrulew{0.4pt}{0.2pt}{\hsize}
+      \vskip\topskip
+      \cleaders\vbox to\baselineskip{
+        \hidehrulew{.2pt}{.2pt}{\hsize}
+        \vfil%
+        \hidehrulew{.2pt}{.2pt}{\hsize}}
+      \vfill}
+    \setbox255=\vbox to\vsize{\vtop to0pt{\box0\vss}\hrule height 0pt\box255}
+  \fi
   \the\ccgrid@prevoutput}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %

@@ -1,5 +1,4 @@
-CCGRID OUTPUT BOX
-vlist 469.755pt x (634pt+0pt) glue_set=0 glue_sign=1 glue_order=3
+OUTPUT BOX
 .glue 3.05556pt plus 60pt
 .hlist 469.755pt x (6.94444pt+1.94444pt) glue_set=335 glue_sign=1 glue_order=2
 .glue 0pt ro
