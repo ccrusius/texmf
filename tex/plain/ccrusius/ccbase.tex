@@ -123,7 +123,7 @@ local function tosp(x)
   end
 end
 
-local function spstr(x) tex.print(string.format("%fsp",x)) end
+local function spstr(x) return string.format("%fsp",x) end
 
 local function mkglue(w,st,sto,sh,sho)
   local glue = node.new(ccbase.GLUE_TYPE)
