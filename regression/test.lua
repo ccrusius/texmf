@@ -46,6 +46,7 @@ end
 
 function test_ccbase01()    logtest("ccbase01") end
 function test_ccshowbox01() logtest("ccshowbox01") end
+function test_ccgrid01()    logtest("ccgrid01") end
 
 lu = LuaUnit.new()
 os.exit(lu:runSuite())

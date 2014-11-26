@@ -1,0 +1,13 @@
+\input ccgrid
+\nopagenumbers
+\par This is a short paragraph.
+\par\bf This is another one.\rm
+\par\it And this is another one.\rm
+$$\sum_{i=0}^n i\> \hbox{\rm (some display math)}$$
+\par Math display above.
+\vfill
+\par This is after a vfill.
+\par This is a longer paragraph to test what happens $\int_0^\infty x\,dx$ when we have line breaks. The baselines should still align
+$\int_0^\infty x\,dx$. We make it three lines to test what is happening with {\tt pre\_box}, whose wrong processing was throwing this
+paragraph's baseline off.
+\bye

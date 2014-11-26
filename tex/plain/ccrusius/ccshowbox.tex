@@ -48,6 +48,13 @@ local function showkern(n,depth,prefix)
 end
 
 local shownode -- forward declaration
+local function showheadlist(n,depth,prefix)
+  while n do
+    shownode(n,depth,prefix)
+    n = n.next
+  end
+end
+
 local function showlist(n,depth,prefix,name)
   local t = prefix..name..string.format(
     " %gpt x (%gpt+%gpt)",
@@ -57,11 +64,7 @@ local function showlist(n,depth,prefix,name)
   t = t..nzformat(" glue_order=%d",n.glue_order)
   t = t..nzformat(" shift=%gpt",n.shift/2^16)
   texio.write_nl(t)
-  local h = n.head
-  while h do
-    shownode(h,depth-1,prefix..".")
-    h = h.next
-  end
+  showheadlist(n.head,depth-1,prefix..".")
 end
 local function showhlist(n,depth,prefix) showlist(n,depth,prefix,"hlist") end
 local function showvlist(n,depth,prefix) showlist(n,depth,prefix,"vlist") end
@@ -104,7 +107,9 @@ local function showbox(box,depth)
 end
 
 ccshowbox = {
-  showbox = showbox,
+  showbox  = showbox,
+  shownode = shownode,
+  showheadlist = showheadlist,
 }
 \endluacode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

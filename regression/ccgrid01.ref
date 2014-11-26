@@ -1,0 +1,31 @@
+CCGRID OUTPUT BOX
+vlist 469.755pt x (636pt+0pt) glue_set=0 glue_sign=1 glue_order=3
+.glue 3.05556pt plus 60pt
+.hlist 469.755pt x (6.94444pt+1.94444pt) glue_set=335 glue_sign=1 glue_order=2
+.glue 0pt plus 1pt
+.glue 3.11111pt
+.hlist 469.755pt x (6.94444pt+0pt) glue_set=349 glue_sign=1 glue_order=2
+.glue 0pt plus 1pt
+.glue 5.05556pt
+.hlist 469.755pt x (6.94444pt+0pt) glue_set=343 glue_sign=1 glue_order=2
+.glue 0pt
+.glue -4.51393pt
+.hlist 111.334pt x (16.5139pt+12.7986pt) shift=179.21pt
+.glue 7pt
+.glue 0pt plus 1pt
+.glue 0pt ro
+.glue 9.25691pt
+.hlist 469.755pt x (6.94444pt+1.94444pt) glue_set=361 glue_sign=1 glue_order=2
+.glue 0pt plus 1fill ro
+.glue 0pt plus 1pt
+.glue 3.11111pt
+.hlist 469.755pt x (6.94444pt+0pt) glue_set=365 glue_sign=1 glue_order=2
+.glue 0pt plus 1pt
+.glue 3.40271pt
+.hlist 469.755pt x (8.59729pt+3.5556pt) glue_set=0 glue_sign=1
+.glue -0.152893pt
+.hlist 469.755pt x (8.59729pt+3.5556pt) glue_set=0 glue_sign=1
+.glue 1.49995pt
+.hlist 469.755pt x (6.94444pt+1.94444pt) glue_set=234 glue_sign=1 glue_order=2
+.glue 0pt plus 1fill ro
+.glue 0pt plus 10000fill

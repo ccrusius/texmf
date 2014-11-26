@@ -96,6 +96,7 @@
 % CCBASE LUA MODULE
 %
 \luacode
+--------------------------------------------------------------------------------
 --
 -- LuaTeX node ids
 --
@@ -107,6 +108,35 @@ local MATH_TYPE    = node.id("math")
 local RULE_TYPE    = node.id("rule")
 local VLIST_TYPE   = node.id("vlist")
 local WHATSIT_TYPE = node.id("whatsit")
+--------------------------------------------------------------------------------
+--
+-- Basic functions
+--
+-- tosp: Tries to get a scaled point dimensioned numeric value out of something.
+-- spstr: Returns a TeX-friently string with the value of "x" in scaled points.
+-- mkglue: Create a new glue node
+--
+local function tosp(x)
+  if type(x) == "number" then return x
+  elseif type(x) == "string" then return tonumber((string.gsub(x,"pt.*","")))*2^16
+  else assert(false,"ccbase.tosp: Unrecognized type "..type(x))
+  end
+end
+
+local function spstr(x) tex.print(string.format("%fsp",x)) end
+
+local function mkglue(w,st,sto,sh,sho)
+  local glue = node.new(ccbase.GLUE_TYPE)
+  glue.spec = node.new("glue_spec")
+  glue.spec.width = w
+  glue.spec.stretch = st
+  glue.spec.stretch_order = sto
+  glue.spec.shrink = sh
+  glue.spec.shrink_order = sho
+  return glue
+end
+
+
 --
 -- Export "ccbase" module
 --
@@ -119,6 +149,9 @@ ccbase = {
   RULE_TYPE    = RULE_TYPE,
   VLIST_TYPE   = VLIST_TYPE,
   WHATSIT_TYPE = WHATSIT_TYPE,
+  spstr        = spstr,
+  tosp         = tosp,
+  mkglue       = mkglue,
 }
 \endluacode
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
