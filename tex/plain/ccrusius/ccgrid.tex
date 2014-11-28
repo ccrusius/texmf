@@ -1,86 +1,48 @@
-%% @texfile{
-%%   author = "Cesar Crusius",
-%%   filename = "ccgrid.tex",
-%%   docstring = "Try to force baseline alignment",
-%% }
 \input ccbase
 \pragmaonce{ccgrid}
 \input ccshowbox
 \directlua{ccgrid = dofile(kpse.find_file("ccgrid.lua"))}
 \makeatletter
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Logging
-%
 \newcount\ccgridloglevel\ccgridloglevel=0
 \def\setccgridloglevel#1{%
   \directlua{ccgrid.setloglevel(#1)}%
   \global\ccgridloglevel=#1}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\ccgrid@rounddown#1{
-  \directlua{tex.print(ccbase.spstr(ccgrid.snapdown(ccbase.tosp("#1"))))}}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\def\hidehrulew#1#2#3{\kern-#1 \hrule height#1 depth#2 width#3\kern -#2}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% OUTPUT ROUTINE
-%
+\def\ccgriddraft{\setccgridloglevel{1}}
 \newtoks\ccgrid@prevoutput
 \ccgrid@prevoutput=\expandafter{\the\output}
 \output={%
-  %
-  % A baseline grid for debugging. This is the best way to verify whether
-  % or not this is working, what is and is not on the grid. This should be
-  % enabled before accepting a final proof.
-  %
   \ifnum\ccgridloglevel>0%
     \setbox0=\vbox to\vsize{
-      \hidehrulew{0.4pt}{0.2pt}{\hsize}
-      \vskip\topskip
-      \cleaders\vbox to\baselineskip{
-        \hidehrulew{.2pt}{.2pt}{\hsize}
-        \vfil%
-        \hidehrulew{.2pt}{.2pt}{\hsize}}
-      \vfill}
+               \kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt
+               \vskip\topskip
+               \cleaders\vbox to\baselineskip{
+                 \kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt
+                 \vfil%
+                 \kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt}
+               \vfill}
     \setbox255=\vbox to\vsize{\vtop to0pt{\box0\vss}\hrule height 0pt\box255}
   \fi
   \the\ccgrid@prevoutput}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% CCGRIDSETUP
-%
-% Sets up the environment, dimensions, and so on.
-%
+\def\ccgrid@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}
 \def\ccgridsetup{
-  %
-  % Remove glue from \baselineskip and other things.
-  %
-  \global\baselineskip=\directlua{tex.print(ccgrid.freeze("\the\baselineskip"))}
-  \global\topskip=\directlua{tex.print(ccgrid.freeze("\the\topskip"))}
-  \global\parskip=\directlua{tex.print(ccgrid.freeze("\the\parskip"))}
-  \global\abovedisplayskip=\directlua{tex.print(ccgrid.freeze("\the\abovedisplayskip"))}
-  \global\belowdisplayskip=\directlua{tex.print(ccgrid.freeze("\the\belowdisplayskip"))}
-  \global\abovedisplayshortskip=\directlua{tex.print(ccgrid.freeze("\the\abovedisplayshortskip"))}
-  \global\belowdisplayshortskip=\directlua{tex.print(ccgrid.freeze("\the\belowdisplayshortskip"))}
+  \global\baselineskip=\ccgrid@freeze{\the\baselineskip}
   \directlua{ccgrid.setgrid(ccbase.tosp("\the\baselineskip"))}
-  %
-  % Resize \vsize to be a multiple of \baselineskip.
-  %
+  \typeout{ccgrid: baselineskip=\the\baselineskip}
+  \global\topskip=\ccgrid@freeze{\the\topskip}
+  \global\parskip=\ccgrid@freeze{\the\parskip}
+  \global\abovedisplayskip=\ccgrid@freeze{\the\abovedisplayskip}
+  \global\belowdisplayskip=\ccgrid@freeze{\the\belowdisplayskip}
+  \global\abovedisplayshortskip=\ccgrid@freeze{\the\abovedisplayshortskip}
+  \global\belowdisplayshortskip=\ccgrid@freeze{\the\belowdisplayshortskip}
   \global\advance\vsize by-\topskip
-  \global\vsize=\ccgrid@rounddown{\the\vsize}
+  \global\vsize=\directlua{tex.print(%
+    ccbase.spstr(ccgrid.snapdown(ccbase.tosp("\the\vsize"))))}
   \global\advance\vsize by\topskip
-  %
-  % Set other values
-  %
+  \typeout{ccgrid: vsize=\the\vsize}
   \global\lineskip=0pt
   \global\lineskiplimit=-0.5\baselineskip
-  \typeout{ccgrid: baselineskip=\the\baselineskip}
-  \typeout{ccgrid: vsize=\the\vsize}
-  \typeout{ccgrid: topskip=\the\topskip}
-  \typeout{ccgrid: parskip=\the\parskip}
   \raggedbottom% We do our own thing, but let's tell others this is the intent
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\makeatother
 \ccgridsetup
+\makeatother
 \endinput

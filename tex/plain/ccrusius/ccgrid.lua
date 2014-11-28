@@ -2,56 +2,14 @@
 --
 -- Algorithm variables
 --
--- baselineskip: The grid size. We have our own copy because the value of
---     TeX's baselineskip can change mid-document.
 -- haccum: When incrementally processing a vlist, we keep track of how
 --     much vertical material was added so far in this variable.
 -- lastprebox: LuaTeX, when breaking paragraphs into lines, signals that
 --     new material will be added with a pre_box buildpage_filter call.
 --     We save the value so we don't re-process things.
 --
-local baselineskip = 0
 local haccum = 0
 local lastprebox = nil
-
---- The ccgrid log level.
--- Defines the amout of verbiage we are expected to produce. The values are as
--- follows:
---
---     0. nothing
---     1. adds a baseline grid to every page
---     2. prints the contents of \box255 at every output
---     3. traces page building process
-local loglevel = 0
-
---- Set the log level.
--- @param x The new log level.
-local function setloglevel(x) loglevel = x end
-
---- Type out a message to the console and TeX log if the log level is high enough.
--- @param lvl The minimum log level required for the message to be issued.
--- @param str The message to be issued.
-local function typeout(lvl,str)
-  if loglevel >= lvl then texio.write_nl(str) end
-end
-
---------------------------------------------------------------------------------
---
--- Basic functions
---
--- setgrid: set the baselineskip value
--- snapdown: reduces x (in sp) so that it is a multiple of baselineskip
--- freeze: return a copy of the input, with all stretchability removed
---
-local function setgrid(x) baselineskip=x end
-local function snapdown(x) return baselineskip*math.floor(x/baselineskip) end
-local function freeze(x)
-  if type(x) == "string" then
-    return (ccbase.spstr(ccbase.tosp(x))).." plus 0pt minus 0pt"
-  else
-    return ccbase.mkglue(x.spec.width,0,0,0,0)
-  end
-end
 
 local function buildpage_glue(head,cur)
   local spec = cur.spec
@@ -163,10 +121,3 @@ end
 
 callback.register("buildpage_filter",buildpage)
 callback.register("pre_output_filter",output)
-
-return {
-  snapdown = snapdown,
-  setgrid = setgrid,
-  freeze = freeze,
-  setloglevel = setloglevel,
-}

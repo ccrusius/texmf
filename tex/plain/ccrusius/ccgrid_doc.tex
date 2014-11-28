@@ -1,0 +1,365 @@
+\input cwebmac
+\let\ifpdf\relax
+\input eplain
+\secpagedepth=1
+\newbox\cctanglebox
+\N{0}{1}Baseline grid.
+This package modifies \TeX{}'s page building routine so that all the
+main baselines are on an equally spaced (by \hbox{\verbatim
+\baselineskip|endverbatim}{}) grid.
+This not only mimicks traditional typesetting, but also results
+in a more pleasing document.
+\unorderedlist
+\li In multiple colum documents, where the problem is most visible,
+it is not uncommon for baselines not
+to align accross colums, resulting in an unbalanced layout.
+\li In single page documents the problem is less obvious, but it
+shows up both in facing pages -- where each page can be considered
+to be one column in a double-column document --, and on the same
+sheet of paper, if the baselines of the pages on that sheet do not align.
+This last problem is more visible on more ``transparent'' paper, but
+one can readily see it, for example, by looking at page~51 of the \TeX{}book
+against light: although the baselines of page~51 and~52 start aligned,
+towards the end of the page they are completely out of sync.
+\endunorderedlist
+\M{2}The solution for this problem seems to have eluded all trials so far,
+and this is not surprising: one needs to change the page building process
+to make it work. In particular, at every point when \TeX{} is considering
+the addition of vertical material to the output box, we must filter it to
+make sure said material would end up aligned to the baseline grid. This is
+very hard to do (impossible?) in \TeX{} alone, but Lua\TeX{} has
+enough hooks to make this possible.
+\M{3}I will
+describe the algorithm in more detail later, but the idea is as follows:
+Firstly, we will keep track of the total height of what was already
+added to the output box. Let us call that value~$b_h$.
+Then, we process each element in the \TeX{} recent
+vertical contribution list.
+\unorderedlist
+\li If the element is a glue with natural dimension~$g$, we remove all stretch
+from it, and update~$b_h\leftarrow b_h+g$.
+\li If the element is a horizontal list with height~$h_h$ and depth~$h_d$, we
+insert enough glue~$g$ before it to make $(b_h + g + h_h)\bmod x=0$ (in other
+words, to align its baseline with the grid), and update~$b_h\leftarrow b_h + g + h_d + h_h$.
+\endunorderedlist
+There are more things we need to do, but the basic idea should be clear:
+we want to only feed \TeX's output box with things that are already aligned
+to the baseline grid, and give \TeX{} no opportunity to change that by not
+giving it any room to stretch. One could say we want to make the output
+box look like an airplane's ``economy class'' section.
+\N{2}{4}Using this package.
+This package is one part of my \TeX{} macro set, and has to be used inside it.
+This means you must be willing to use Eplain instead of \LaTeX, for example.
+Making this package portable should not be too difficult if you wish to do so
+-- if you do, please publish your work so others can use it.
+
+If you still want to use this, clone my \hbox{\verbatim
+texmf|endverbatim}{} tree from GitHub, at
+\hbox{\verbatim
+https://github.com/ccrusius/texmf|endverbatim}{}, make sure \TeX{} can find it,
+and add the following to your document's preamble. The call
+to \hbox{\verbatim
+\ccgridsetup|endverbatim}{} is to make sure everything is
+properly arranged: it is already called once when you include
+the package, but if your preamble changes things after that
+\hbox{\verbatim
+ccgrid|endverbatim}{} may have to recompute some values.
+\Y\B\4\setbox\cctanglebox\hbox{Enabling the baseline grid in your document}\X4:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\input| ccgrid|endverbatim\6
+\verbatim
+%| ...| rest| of| preamble| ...|endverbatim\6
+\verbatim
+\ccgridsetup|endverbatim\6
+\fi
+\N{0}{5}The package files.
+\M{6}\B\4\setbox\cctanglebox\hbox{*{xxxccgrid.lua}}\X6:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{Lua global variables}\X11:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{Lua functions}\X14:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+return| {| |endverbatim\setbox\cctanglebox\hbox{Lua module exports}\X15:\box\cctanglebox\X\verbatim
+| }|endverbatim\6
+\fi
+\M{7}\B\4\setbox\cctanglebox\hbox{*{ccgrid.tex}}\X7:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{\TeX{} package preamble}\X8:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{\TeX{} global variables}\X12:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{\TeX{} macros}\X13:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{Set up grid parameters}\X21:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+|endverbatim\setbox\cctanglebox\hbox{\TeX{} package postamble}\X9:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\fi
+\M{8}\B\4\setbox\cctanglebox\hbox{\TeX{} package preamble}\X8:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\input| ccbase|endverbatim\6
+\verbatim
+\pragmaonce{ccgrid}|endverbatim\6
+\verbatim
+\input| ccshowbox|endverbatim\6
+\verbatim
+\directlua{ccgrid| =| dofile(kpse.find_file("ccgrid.lua"))}|endverbatim\6
+\verbatim
+\makeatletter|endverbatim\6
+\fi
+\M{9}\B\4\setbox\cctanglebox\hbox{\TeX{} package postamble}\X9:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\makeatother|endverbatim\6
+\verbatim
+\endinput|endverbatim\6
+\fi
+\N{0}{10}Debugging.
+Things did go wrong quite often with this, as baseline gridding is not something
+\TeX{} was designed to do, so I had to set up a decent enough debugging
+infrastructure. You will probably not be debugging this package, but the
+code needs to be here anyway.
+In order to control what debugging messages are
+printed, you have to set \hbox{\verbatim
+ccgrid|endverbatim}{}'s log level to a suitable value, as follows:
+
+\halign{\strut\hfil{\tt #}\hfil&\quad#\hfil\cr
+\omit\bf Level\hfil&\bf Information\hfil\cr
+0 & Nothing.\cr
+1 & Adds a baseline grid to every page.\cr
+2 & Prints the contents of \hbox{\verbatim
+\box255|endverbatim}{} every page.\cr
+3 & Trace page building process.\cr}
+\M{11}In Lua, the log level is stored in the global \hbox{\verbatim
+loglevel|endverbatim}{} variable.
+We will keep a copy of in in \TeX's \hbox{\verbatim
+\ccgridloglevel|endverbatim}{} counter. To keep both in
+sync, you should always change the log level by calling the \hbox{\verbatim
+\setccgridloglevel|endverbatim}{}
+\TeX{} macro.
+\Y\B\4\setbox\cctanglebox\hbox{Lua global variables}\X11:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+local| loglevel| =| 0|endverbatim\6
+\fi
+\M{12}\B\4\setbox\cctanglebox\hbox{\TeX{} global variables}\X12:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\newcount\ccgridloglevel\ccgridloglevel=0|endverbatim\6
+\fi
+\M{13}\B\4\setbox\cctanglebox\hbox{\TeX{} macros}\X13:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\def\setccgridloglevel#1{%|endverbatim\6
+\verbatim
+| | \directlua{ccgrid.setloglevel(#1)}%|endverbatim\6
+\verbatim
+| | \global\ccgridloglevel=#1}|endverbatim\6
+\fi
+\M{14}\B\4\setbox\cctanglebox\hbox{Lua functions}\X14:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+local| function| setloglevel(x)| loglevel| =| x| end|endverbatim\6
+\fi
+\M{15}\B\4\setbox\cctanglebox\hbox{Lua module exports}\X15:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+setloglevel| =| setloglevel,|endverbatim\6
+\fi
+\M{16}Most of the debugging messages are printed by the Lua module via a call
+to the \hbox{\verbatim
+typeout|endverbatim}{} function below:
+\Y\B\4\setbox\cctanglebox\hbox{Lua functions}\X14:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+local| function| typeout(lvl,str)|endverbatim\6
+\verbatim
+| | if| loglevel| >=| lvl| then| texio.write_nl(str)| end|endverbatim\6
+\verbatim
+end|endverbatim\6
+\fi
+\N{0}{17}Displaying a baseline grid.
+To enable the display of a baseline grid at every
+page, use the macro below. Doing this before a final build is a good idea, as
+it will quickly tell you whether things are working or not. The macro works
+by setting the appropriate log level, as described previously.
+\Y\B\4\setbox\cctanglebox\hbox{\TeX{} macros}\X13:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+\def\ccgriddraft{\setccgridloglevel{1}}|endverbatim\6
+\fi
+\M{18}To print a baseline grid at every page, we redefine the \hbox{\verbatim
+\output|endverbatim}{}
+routine.
+\Y\B\4\setbox\cctanglebox\hbox{\TeX{} macros}\X13:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+\newtoks\ccgrid@prevoutput|endverbatim\6
+\verbatim
+\ccgrid@prevoutput=\expandafter{\the\output}|endverbatim\6
+\verbatim
+\output={%|endverbatim\6
+\verbatim
+| | \ifnum\ccgridloglevel>0%|endverbatim\6
+\verbatim
+| | | | \setbox0=|endverbatim\setbox\cctanglebox\hbox{Baseline grid box}\X19:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | | | \setbox255=\vbox| to\vsize{\vtop| to0pt{\box0\vss}\hrule| height| 0pt\box255}|endverbatim\6
+\verbatim
+| | \fi|endverbatim\6
+\verbatim
+| | \the\ccgrid@prevoutput}|endverbatim\6
+\fi
+\M{19}\B\4\setbox\cctanglebox\hbox{Baseline grid box}\X19:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\vbox| to\vsize{|endverbatim\6
+\verbatim
+| | |endverbatim\setbox\cctanglebox\hbox{Baseline grid rule}\X20:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | \vskip\topskip|endverbatim\6
+\verbatim
+| | \cleaders\vbox| to\baselineskip{|endverbatim\6
+\verbatim
+| | | | |endverbatim\setbox\cctanglebox\hbox{Baseline grid rule}\X20:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | | | \vfil%|endverbatim\6
+\verbatim
+| | | | |endverbatim\setbox\cctanglebox\hbox{Baseline grid rule}\X20:\box\cctanglebox\X\verbatim
+}|endverbatim\6
+\verbatim
+| | \vfill}|endverbatim\6
+\fi
+\M{20}\B\4\setbox\cctanglebox\hbox{Baseline grid rule}\X20:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\kern-0.2pt\hrule| height0.2pt| depth0.2pt| width\hsize\kern| -0.2pt|endverbatim\6
+\fi
+\N{0}{21}Parameter initialization.
+A gridded \TeX{} run must have some parameters properly initialized.
+This includes removing stretch from all known skips and sizing things
+such as \hbox{\verbatim
+\vsize|endverbatim}{} properly. All of this is done in the \hbox{\verbatim
+\ccgridsetup|endverbatim}{}
+macro, which is called automatically when \hbox{\verbatim
+ccgrid.tex|endverbatim}{} is read.
+\Y\B\4\setbox\cctanglebox\hbox{Set up grid parameters}\X21:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\def\ccgridsetup{|endverbatim\6
+\verbatim
+| | |endverbatim\setbox\cctanglebox\hbox{Remove glue from \hbox{\verbatim
+\baselineskip|endverbatim}{} and set the Lua grid}\X28:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | |endverbatim\setbox\cctanglebox\hbox{Remove glue from other \TeX{} skips}\X29:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | |endverbatim\setbox\cctanglebox\hbox{Set \hbox{\verbatim
+\vsize|endverbatim}{} to a multiple of \hbox{\verbatim
+\baselineskip|endverbatim}{}}\X30:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | |endverbatim\setbox\cctanglebox\hbox{Set \hbox{\verbatim
+\lineskip|endverbatim}{} and \hbox{\verbatim
+\lineskiplimit|endverbatim}{}}\X31:\box\cctanglebox\X\verbatim
+|endverbatim\6
+\verbatim
+| | \raggedbottom%| We| do| our| own| thing,| but| let's| tell| others| this| is| the| intent|endverbatim\6
+\verbatim
+}|endverbatim\6
+\verbatim
+\ccgridsetup|endverbatim\6
+\fi
+\M{22}The spacing for our grid should be essentially \hbox{\verbatim
+\baselineskip|endverbatim}{}, but we need
+to fix this value at the beginning of the document in a separate variable,
+since \TeX{} may change it mid-course. In Lua, we keep the value in the
+\hbox{\verbatim
+baselineskip|endverbatim}{} variable, and the user can only change it by first
+setting \hbox{\verbatim
+\baselineskip|endverbatim}{} accordingly, and then calling the \TeX
+\hbox{\verbatim
+\ccgridseput|endverbatim}{} macro.
+\Y\B\4\setbox\cctanglebox\hbox{Lua global variables}\X11:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+local| baselineskip| =| 0|endverbatim\6
+\fi
+\M{23}\B\4\setbox\cctanglebox\hbox{Lua functions}\X14:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+local| function| setgrid(x)| baselineskip=x| end|endverbatim\6
+\fi
+\M{24}\B\4\setbox\cctanglebox\hbox{Lua module exports}\X15:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+setgrid| =| setgrid,|endverbatim\6
+\fi
+\M{25}Some basic math has to be performed when setting these parameters,
+and that is done on the Lua side of things.
+\Y\B\4\setbox\cctanglebox\hbox{Lua functions}\X14:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+local| function| snapdown(x)|endverbatim\6
+\verbatim
+| | return| baselineskip*math.floor(x/baselineskip)|endverbatim\6
+\verbatim
+end|endverbatim\6
+\verbatim
+local| function| freeze(x)|endverbatim\6
+\verbatim
+| | return| (ccbase.spstr(ccbase.tosp(x))).."| plus| 0pt| minus| 0pt"|endverbatim\6
+\verbatim
+end|endverbatim\6
+\fi
+\M{26}\B\4\setbox\cctanglebox\hbox{Lua module exports}\X15:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+snapdown| =| snapdown,|endverbatim\6
+\verbatim
+freeze| =| freeze,|endverbatim\6
+\fi
+\M{27}\B\4\setbox\cctanglebox\hbox{\TeX{} macros}\X13:\box\cctanglebox\X${}\mathrel+\equiv{}$\6
+\verbatim
+\def\ccgrid@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}|endverbatim\6
+\fi
+\M{28}\B\4\setbox\cctanglebox\hbox{Remove glue from \hbox{\verbatim
+\baselineskip|endverbatim}{} and set the Lua grid}\X28:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\global\baselineskip=\ccgrid@freeze{\the\baselineskip}|endverbatim\6
+\verbatim
+\directlua{ccgrid.setgrid(ccbase.tosp("\the\baselineskip"))}|endverbatim\6
+\verbatim
+\typeout{ccgrid:| baselineskip=\the\baselineskip}|endverbatim\6
+\fi
+\M{29}\B\4\setbox\cctanglebox\hbox{Remove glue from other \TeX{} skips}\X29:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\global\topskip=\ccgrid@freeze{\the\topskip}|endverbatim\6
+\verbatim
+\global\parskip=\ccgrid@freeze{\the\parskip}|endverbatim\6
+\verbatim
+\global\abovedisplayskip=\ccgrid@freeze{\the\abovedisplayskip}|endverbatim\6
+\verbatim
+\global\belowdisplayskip=\ccgrid@freeze{\the\belowdisplayskip}|endverbatim\6
+\verbatim
+\global\abovedisplayshortskip=\ccgrid@freeze{\the\abovedisplayshortskip}|endverbatim\6
+\verbatim
+\global\belowdisplayshortskip=\ccgrid@freeze{\the\belowdisplayshortskip}|endverbatim\6
+\fi
+\M{30}\B\4\setbox\cctanglebox\hbox{Set \hbox{\verbatim
+\vsize|endverbatim}{} to a multiple of \hbox{\verbatim
+\baselineskip|endverbatim}{}}\X30:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\global\advance\vsize| by-\topskip|endverbatim\6
+\verbatim
+\global\vsize=\directlua{tex.print(%|endverbatim\6
+\verbatim
+| | ccbase.spstr(ccgrid.snapdown(ccbase.tosp("\the\vsize"))))}|endverbatim\6
+\verbatim
+\global\advance\vsize| by\topskip|endverbatim\6
+\verbatim
+\typeout{ccgrid:| vsize=\the\vsize}|endverbatim\6
+\fi
+\M{31}\B\4\setbox\cctanglebox\hbox{Set \hbox{\verbatim
+\lineskip|endverbatim}{} and \hbox{\verbatim
+\lineskiplimit|endverbatim}{}}\X31:\box\cctanglebox\X${}\equiv{}$\6
+\verbatim
+\global\lineskip=0pt|endverbatim\6
+\verbatim
+\global\lineskiplimit=-0.5\baselineskip|endverbatim\6
+\fi
+
+\bye
