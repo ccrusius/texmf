@@ -1,0 +1,140 @@
+\secpagedepth=1
+@* Baseline grid.
+This package modifies \TeX{}'s page building routine so that all the
+main baselines are on an equally spaced (by |\baselineskip|) grid.
+This not only mimicks traditional typesetting, but also results
+in a more pleasing document.
+\unorderedlist
+\li In multiple colum documents, where the problem is most visible,
+it is not uncommon for baselines not
+to align accross colums, resulting in an unbalanced layout.
+\li In single page documents the problem is less obvious, but it
+shows up both in facing pages -- where each page can be considered
+to be one column in a double-column document --, and on the same
+sheet of paper, if the baselines of the pages on that sheet do not align.
+This last problem is more visible on more ``transparent'' paper, but
+one can readily see it, for example, by looking at page~51 of the \TeX{}book
+against light: although the baselines of page~51 and~52 start aligned,
+towards the end of the page they are completely out of sync.
+\endunorderedlist
+@ The solution for this problem seems to have eluded all trials so far,
+and this is not surprising: one needs to change the page building process
+to make it work. In particular, at every point when \TeX{} is considering
+the addition of vertical material to the output box, we must filter it to
+make sure said material would end up aligned to the baseline grid. This is
+very hard to do (impossible?) in \TeX{} alone, but Lua\TeX{} has
+enough hooks to make this possible.
+@ I will
+describe the algorithm in more detail later, but the idea is as follows:
+Firstly, we will keep track of the total height of what was already
+added to the output box. Let us call that value~$b_h$.
+Then, we process each element in the \TeX{} recent
+vertical contribution list.
+\unorderedlist
+\li If the element is a glue with natural dimension~$g$, we remove all stretch
+from it, and update~$b_h\leftarrow b_h+g$.
+\li If the element is a horizontal list with height~$h_h$ and depth~$h_d$, we
+insert enough glue~$g$ before it to make $(b_h + g + h_h)\bmod x=0$ (in other
+words, to align its baseline with the grid), and update~$b_h\leftarrow b_h + g + h_d + h_h$.
+\endunorderedlist
+There are more things we need to do, but the basic idea should be clear:
+we want to only feed \TeX's output box with things that are already aligned
+to the baseline grid, and give \TeX{} no opportunity to change that by not
+giving it any room to stretch. One could say we want to make the output
+box look like an airplane's ``economy class'' section.
+@*2 Using this package.
+This package is one part of my \TeX{} macro set, and has to be used inside it.
+This means you must be willing to use Eplain instead of \LaTeX, for example.
+Making this package portable should not be too difficult if you wish to do so
+-- if you do, please publish your work so others can use it.
+
+If you still want to use this, clone my |texmf| tree from GitHub, at
+|https://github.com/ccrusius/texmf|, make sure \TeX{} can find it,
+and add the following to your document's preamble, and as late as possible
+so everything is set up properly before calling |\ccgridsetup|:
+@<Enabling the baseline grid in your document@>={tex}
+\input ccgrid
+\ccgridsetup
+@* The package files.
+@ @<*{xxxccgrid.lua}@>=
+@<Lua global variables@>
+@<Lua functions@>
+return { @<Lua module exports@> }
+@ @<*{xxxccgrid.tex}@>=
+@<\TeX{} package preamble@>
+@<\TeX{} global variables@>
+@<\TeX{} macros@>
+@<\TeX{} package postamble@>
+@ @<\TeX{} package preamble@>={tex}
+\input ccbase
+\pragmaonce{ccgrid}
+\input ccshowbox
+\directlua{ccgrid = dofile(kpse.find_file("ccgrid.lua"))}
+\makeatletter
+@ @<\TeX{} package postamble@>={tex}
+\makeatother
+\endinput
+@* Debugging.
+Things did go wrong quite often with this, as baseline gridding is not something
+\TeX{} was designed to do, so I had to set up a decent enough debugging
+infrastructure. You will probably not be debugging this package, but the
+code needs to be here anyway.
+In order to control what debugging messages are
+printed, you have to set |ccgrid|'s log level to a suitable value, as follows:
+
+\halign{\strut\hfil{\tt #}\hfil&\quad#\hfil\cr
+\omit\bf Level\hfil&\bf Information\hfil\cr
+0 & Nothing.\cr
+1 & Adds a baseline grid to every page.\cr
+2 & Prints the contents of |\box255| every page.\cr
+3 & Trace page building process.\cr}
+@ In Lua, the log level is stored in the global |loglevel| variable.
+We will keep a copy of in in \TeX's |\ccgridloglevel| counter. To keep both in
+sync, you should always change the log level by calling the |\setccgridloglevel|
+\TeX{} macro.
+@<Lua global variables@>={lua}
+local loglevel = 0
+@ @<\TeX{} global variables@>={tex}
+\newcount\ccgridloglevel\ccgridloglevel=0
+@ @<\TeX{} macros@>={tex}
+\def\setccgridloglevel#1{%
+  \directlua{ccgrid.setloglevel(#1)}%
+  \global\ccgridloglevel=#1}
+@ @<Lua functions@>={lua}
+local function setloglevel(x) loglevel = x end
+@ @<Lua module exports@>={lua}
+setloglevel = setloglevel,
+@ Most of the debugging messages are printed by the Lua module via a call
+to the |typeout| function below:
+@<Lua functions@>={lua}
+local function typeout(lvl,str)
+  if loglevel >= lvl then texio.write_nl(str) end
+end
+@* Displaying a baseline grid. To enable the display of a baseline grid at every
+page, use the macro below. Doing this before a final build is a good idea, as
+it will quickly tell you whether things are working or not. The macro works
+by setting the appropriate log level, as described previously.
+@<\TeX{} macros@>={tex}
+\def\ccgriddraft{\setccgridloglevel{1}}
+@ To print a baseline grid at every page, we redefine the |\output|
+routine.
+@<\TeX{} macros@>={tex}
+\newtoks\ccgrid@prevoutput
+\ccgrid@prevoutput=\expandafter{\the\output}
+\output={%
+  \ifnum\ccgridloglevel>0%
+    \setbox0=@<Baseline grid box@>
+    \setbox255=\vbox to\vsize{\vtop to0pt{\box0\vss}\hrule height 0pt\box255}
+  \fi
+  \the\ccgrid@prevoutput}
+@ @<Baseline grid box@>={tex}
+\vbox to\vsize{
+  @<Baseline grid rule@>
+  \vskip\topskip
+  \cleaders\vbox to\baselineskip{
+    @<Baseline grid rule@>
+    \vfil%
+    @<Baseline grid rule@>}
+  \vfill}
+@ @<Baseline grid rule@>={tex}
+\kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt

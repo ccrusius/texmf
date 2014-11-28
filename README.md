@@ -1,4 +1,4 @@
 texmf
 =====
 
-TeX macros
+TeX (LuaTeX) macros, including a true baseline grid alignment package.
