@@ -1,3 +1,6 @@
 [submodule "submodules/luaunit"]
 	path = submodules/luaunit
 	url = git@github.com:bluebird75/luaunit.git
+[submodule "submodules/ccweb"]
+	path = submodules/ccweb
+	url = git@github.com:ccrusius/ccweb.git
