@@ -1,4 +1,4 @@
-local luaunit = dofile "./luaunit/luaunit.lua"
+local luaunit = dofile "../submodules/luaunit/luaunit.lua"
 
 local function startswith(str,start)
   return (string.find(str,start,1,true) == 1)

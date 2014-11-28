@@ -1,3 +1,3 @@
-[submodule "regression/luaunit"]
-	path = regression/luaunit
+[submodule "submodules/luaunit"]
+	path = submodules/luaunit
 	url = git@github.com:bluebird75/luaunit.git
