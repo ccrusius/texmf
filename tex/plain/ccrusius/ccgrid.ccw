@@ -50,20 +50,25 @@ Making this package portable should not be too difficult if you wish to do so
 
 If you still want to use this, clone my |texmf| tree from GitHub, at
 |https://github.com/ccrusius/texmf|, make sure \TeX{} can find it,
-and add the following to your document's preamble, and as late as possible
-so everything is set up properly before calling |\ccgridsetup|:
+and add the following to your document's preamble. The call
+to |\ccgridsetup| is to make sure everything is
+properly arranged: it is already called once when you include
+the package, but if your preamble changes things after that
+|ccgrid| may have to recompute some values.
 @<Enabling the baseline grid in your document@>={tex}
 \input ccgrid
+% ... rest of preamble ...
 \ccgridsetup
 @* The package files.
 @ @<*{xxxccgrid.lua}@>=
 @<Lua global variables@>
 @<Lua functions@>
 return { @<Lua module exports@> }
-@ @<*{xxxccgrid.tex}@>=
+@ @<*{ccgrid.tex}@>=
 @<\TeX{} package preamble@>
 @<\TeX{} global variables@>
 @<\TeX{} macros@>
+@<Set up grid parameters@>
 @<\TeX{} package postamble@>
 @ @<\TeX{} package preamble@>={tex}
 \input ccbase
@@ -110,7 +115,8 @@ to the |typeout| function below:
 local function typeout(lvl,str)
   if loglevel >= lvl then texio.write_nl(str) end
 end
-@* Displaying a baseline grid. To enable the display of a baseline grid at every
+@* Displaying a baseline grid.
+To enable the display of a baseline grid at every
 page, use the macro below. Doing this before a final build is a good idea, as
 it will quickly tell you whether things are working or not. The macro works
 by setting the appropriate log level, as described previously.
@@ -119,14 +125,14 @@ by setting the appropriate log level, as described previously.
 @ To print a baseline grid at every page, we redefine the |\output|
 routine.
 @<\TeX{} macros@>={tex}
-\newtoks\ccgrid@prevoutput
-\ccgrid@prevoutput=\expandafter{\the\output}
+\newtoks\ccgrid@@prevoutput
+\ccgrid@@prevoutput=\expandafter{\the\output}
 \output={%
   \ifnum\ccgridloglevel>0%
     \setbox0=@<Baseline grid box@>
     \setbox255=\vbox to\vsize{\vtop to0pt{\box0\vss}\hrule height 0pt\box255}
   \fi
-  \the\ccgrid@prevoutput}
+  \the\ccgrid@@prevoutput}
 @ @<Baseline grid box@>={tex}
 \vbox to\vsize{
   @<Baseline grid rule@>
@@ -138,3 +144,63 @@ routine.
   \vfill}
 @ @<Baseline grid rule@>={tex}
 \kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt
+@* Parameter initialization.
+A gridded \TeX{} run must have some parameters properly initialized.
+This includes removing stretch from all known skips and sizing things
+such as |\vsize| properly. All of this is done in the |\ccgridsetup|
+macro, which is called automatically when |ccgrid.tex| is read.
+@<Set up grid parameters@>={tex}
+\def\ccgridsetup{
+  @<Remove glue from |\baselineskip| and set the Lua grid@>
+  @<Remove glue from other \TeX{} skips@>
+  @<Set |\vsize| to a multiple of |\baselineskip|@>
+  @<Set |\lineskip| and |\lineskiplimit|@>
+  \raggedbottom% We do our own thing, but let's tell others this is the intent
+}
+\ccgridsetup
+@ The spacing for our grid should be essentially |\baselineskip|, but we need
+to fix this value at the beginning of the document in a separate variable,
+since \TeX{} may change it mid-course. In Lua, we keep the value in the
+|baselineskip| variable, and the user can only change it by first
+setting |\baselineskip| accordingly, and then calling the \TeX
+|\ccgridseput| macro.
+@<Lua global variables@>={lua}
+local baselineskip = 0
+@ @<Lua functions@>={lua}
+local function setgrid(x) baselineskip=x end
+@ @<Lua module exports@>=
+setgrid = setgrid,
+@ Some basic math has to be performed when setting these parameters,
+and that is done on the Lua side of things.
+@<Lua functions@>={lua}
+local function snapdown(x)
+  return baselineskip*math.floor(x/baselineskip)
+end
+local function freeze(x)
+  return (ccbase.spstr(ccbase.tosp(x))).." plus 0pt minus 0pt"
+end
+@ @<Lua module exports@>=
+snapdown = snapdown,
+freeze = freeze,
+@ @<\TeX{} macros@>={tex}
+\def\ccgrid@@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}
+@ @<Remove glue from |\baselineskip| and set the Lua grid@>={tex}
+\global\baselineskip=\ccgrid@@freeze{\the\baselineskip}
+\directlua{ccgrid.setgrid(ccbase.tosp("\the\baselineskip"))}
+\typeout{ccgrid: baselineskip=\the\baselineskip}
+@ @<Remove glue from other \TeX{} skips@>={tex}
+\global\topskip=\ccgrid@@freeze{\the\topskip}
+\global\parskip=\ccgrid@@freeze{\the\parskip}
+\global\abovedisplayskip=\ccgrid@@freeze{\the\abovedisplayskip}
+\global\belowdisplayskip=\ccgrid@@freeze{\the\belowdisplayskip}
+\global\abovedisplayshortskip=\ccgrid@@freeze{\the\abovedisplayshortskip}
+\global\belowdisplayshortskip=\ccgrid@@freeze{\the\belowdisplayshortskip}
+@ @<Set |\vsize| to a multiple of |\baselineskip|@>={tex}
+\global\advance\vsize by-\topskip
+\global\vsize=\directlua{tex.print(%
+  ccbase.spstr(ccgrid.snapdown(ccbase.tosp("\the\vsize"))))}
+\global\advance\vsize by\topskip
+\typeout{ccgrid: vsize=\the\vsize}
+@ @<Set |\lineskip| and |\lineskiplimit|@>={tex}
+\global\lineskip=0pt
+\global\lineskiplimit=-0.5\baselineskip
