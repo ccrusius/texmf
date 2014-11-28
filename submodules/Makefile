@@ -1,2 +1,2 @@
 all:
-	$(MAKE) -C ccweb/bin
+	$(MAKE) -C ccweb/bin ccweave.lua
