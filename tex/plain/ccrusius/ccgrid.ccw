@@ -61,9 +61,10 @@ the package, but if your preamble changes things after that
 \ccgridsetup
 @* The package files.
 @ @<*{xxxccgrid.lua}@>=
+local exports = {}
 @<Lua global variables@>
 @<Lua functions@>
-return { @<Lua module exports@> }
+return exports
 @ @<*{ccgrid.tex}@>=
 @<\TeX{} package preamble@>
 @<\TeX{} global variables@>
@@ -107,8 +108,7 @@ local loglevel = 0
   \global\ccgridloglevel=#1}
 @ @<Lua functions@>={lua}
 local function setloglevel(x) loglevel = x end
-@ @<Lua module exports@>={lua}
-setloglevel = setloglevel,
+exports["setloglevel"] = setloglevel
 @ Most of the debugging messages are printed by the Lua module via a call
 to the |typeout| function below:
 @<Lua functions@>={lua}
@@ -168,20 +168,18 @@ setting |\baselineskip| accordingly, and then calling the \TeX
 local baselineskip = 0
 @ @<Lua functions@>={lua}
 local function setgrid(x) baselineskip=x end
-@ @<Lua module exports@>=
-setgrid = setgrid,
+exports["setgrid"] = setgrid
 @ Some basic math has to be performed when setting these parameters,
 and that is done on the Lua side of things.
 @<Lua functions@>={lua}
 local function snapdown(x)
   return baselineskip*math.floor(x/baselineskip)
 end
+exports["snapdown"] = snapdown
 local function freeze(x)
   return (ccbase.spstr(ccbase.tosp(x))).." plus 0pt minus 0pt"
 end
-@ @<Lua module exports@>=
-snapdown = snapdown,
-freeze = freeze,
+exports["freeze"] = freeze
 @ @<\TeX{} macros@>={tex}
 \def\ccgrid@@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}
 @ @<Remove glue from |\baselineskip| and set the Lua grid@>={tex}
