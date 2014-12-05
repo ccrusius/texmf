@@ -7,6 +7,10 @@
 *.out
 *.toc
 
+## CCWEB files
+*.idx
+*.scn
+
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
