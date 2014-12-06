@@ -1,5 +1,8 @@
 \secpagedepth=1
 \def\li{\item{$\bullet$}}
+\def\LuaTeX{\hbox{Lua\TeX}}
+\def\title{CCGRID}
+\def\haccum{h_{\rm acc}}
 @** Baseline grid.
 This package modifies \TeX{}'s page building routine so that all the
 main baselines are on an equally spaced (by |\baselineskip|) grid.
@@ -60,10 +63,11 @@ the package, but if your preamble changes things after that
 % ... rest of preamble ...
 \ccgridsetup
 @** The package files.
-@ @<*{xxxccgrid.lua}@>=
+@ @<*{ccgrid.lua}@>=
 local exports = {}
 @<Lua global variables@>
 @<Lua functions@>
+@<Building a gridded page@>
 return exports
 @ @<*{ccgrid.tex}@>=
 @<\TeX{} package preamble@>
@@ -87,13 +91,12 @@ infrastructure. You will probably not be debugging this package, but the
 code needs to be here anyway.
 In order to control what debugging messages are
 printed, you have to set |ccgrid|'s log level to a suitable value, as follows:
-
-\halign{\strut\hfil{\tt #}\hfil&\quad#\hfil\cr
+$$\vbox{\halign{\strut\hfil{\tt #}\hfil&\quad#\hfil\cr
 \omit\bf Level\hfil&\bf Information\hfil\cr
 0 & Nothing.\cr
 1 & Adds a baseline grid to every page.\cr
 2 & Prints the contents of |\box255| every page.\cr
-3 & Trace page building process.\cr}
+3 & Trace page building process.\cr}}$$
 @ In Lua, the log level is stored in the global |loglevel| variable.
 We will keep a copy of in in \TeX's |\ccgridloglevel| counter. To keep both in
 sync, you should always change the log level by calling the |\setccgridloglevel|
@@ -202,3 +205,170 @@ exports["freeze"] = freeze
 @ @<Set |\lineskip| and |\lineskiplimit|@>={tex}
 \global\lineskip=0pt
 \global\lineskiplimit=-0.5\baselineskip
+@ There is one last thing to do, which is to make sure our ragged bottom
+is ragged. \TeX{} |\raggedbottom| command inserts a rather small, for
+our purposes, ``|1fil|'' glue at the end of the page. This is easily
+undone by other infinite glues that may be sprinkled around.
+
+We register a \LuaTeX{} |pre_output_filter| callback and insert a very
+large glue at the end of every page, hopefully smothering any other glue that
+may be present. (We also take the opportunity and print the log level~2
+output box in the same function.)
+@<Lua functions@>={lua}
+local function output(head)
+  node.insert_after(head,node.slide(head),ccbase.mkglue(0,10000*2^16,3,0,0))
+  typeout(2,"OUTPUT BOX:")
+  if loglevel >= 2 then ccshowbox.showheadlist(head,0,".") end
+  return true
+end
+callback.register("pre_output_filter",output)
+@** Building a gridded page.
+Right before \LuaTeX{} moves material into the main vertical list,
+it calls a user function registered as a |buildpage_filter| callback.
+We will use this to massage the material so it will be aligned to
+the grid when \LuaTeX{} finally inserts it into the vertical list.
+
+To do that, we must keep track of all that was already inserted
+into that list. Hopefully it was all aligned, but if it was not (for
+some reason), we must try to start aligning things as soon as possible.
+
+The only thing we need to know about what was already inserted is
+the total natural height. We will store this in the |haccum| global
+variable, and refer to it as $\haccum$ in the documentation.
+@<Lua global variables@>={lua}
+local haccum = 0
+@ When \LuaTeX{} calls the buildpage filter callback, it gives the
+function the reason why it is being called, as a string. We will
+build a map from the reasons to the functions that will be called
+and store it in |buildpage_actions|. We will describe what
+each means, and what each function does, as we implement them.
+@<Building a gridded page@>={lua}
+local buildpage_actions = {
+  @<Build page actions@>
+}
+@ Once we have that map, the callback is simple: apart from
+a debugging statement, it simply executes the appropriate function
+on the list of potential contributions. Those are found
+in the global \LuaTeX{} variable |tex.lists.contrib_head|.
+@<Building a gridded page@>={lua}
+local function buildpage(reason)
+  local head = tex.lists.contrib_head
+  typeout(3,string.format("BUILDPAGE("..reason..") haccum=%fpt",haccum/2^16))
+  local action = buildpage_actions[reason]
+  if action then action(head) end
+end
+callback.register("buildpage_filter",buildpage)
+@ Let us start with the simplest action. The calling reason is |after_output|
+when \LuaTeX{} has just finished shipping a page. When this happens,
+the main
+vertical material list becomes empty, and all have to do is to reset $\haccum$.
+@<Build page actions@>={lua}
+after_output = function(head) haccum=0 end,
+@ Next, let us define a few no-op actions for debugging purposes:
+@<Build page no-op action@>={lua}
+function(head)
+  if loglevel >= 3 then
+    ccshowbox.showheadlist(head,0,"  == .")
+  end
+end
+@ @<Build page actions@>=
+before_display = @<Build page no-op action@>,
+hmode_par      = @<Build page no-op action@>,
+new_graf       = @<Build page no-op action@>,
+vmode_par      = @<Build page no-op action@>,
+@ The |pre_box| call signals that new material will be added via a |box| call.
+The reason that is important for us is because the |box| call will refer to
+both old and new material, so we have to use the |pre_box| call to identify
+where the old material ends, and the new starts. The list seen in a |pre_box|
+call is the old material, and the list |box| sees is (some) of the old, plus
+the new. We keep track of where the old material ends in the |lastprebox|
+variable, which we update in the |pre_box| call.
+@<Lua global variables@>={lua}
+local lastprebox = nil
+@ @<Build page actions@>={lua}
+pre_box = function(head) lastprebox=node.slide(head) end,
+@ So far, we have only done book-keeping activities. Let's start modifying
+the contents of the contributions list, starting with glues. When we encounter
+glue, we simply remove its stretch so it does not affect any material on
+the page, and update $\haccum$ to reflect the new height of the page once
+the glue is inserted.
+
+The |head| argument represents the head of the contributions list,
+and the |glue| parameter is a pointer to the glue, in that contribution list,
+we want to modify. The function returns the new head and glue.
+As an aside, I could probably have replaced the glue with a kern, but either
+works.
+@<Lua functions@>={lua}
+local function freeze_glue(head,glue)
+  local spec = glue.spec
+  local width = spec.width
+  haccum = haccum + width
+  if spec.stretch == 0 and spec.shrink == 0 then return head, glue end
+
+  local noglue = ccbase.mkglue(glue.spec.width,0,0,0,0)
+  head, noglue = node.insert_after(head,glue,noglue)
+  head, noglue = node.remove(head,glue)
+
+  -- I think we should free "glue" now, but that makes things crash.
+  -- if spec.writable then node.free(glue) end
+  return head, noglue
+end
+@ Next, we deal with a horizontal box, or |hlist| in \LuaTeX{} parlance.
+This is where the real work happens: we want to align all |hlist|s baselines to
+our grid. In order to do that, we insert enough glue to make that happen.
+\medskip
+\li First, we update $\haccum\leftarrow\haccum+h$, where~$h$ is the box height.
+  This is where the box baseline would be if we left it to \TeX{} alone.
+\li Then, we compute how much we have to add in skip to make $\haccum$ a
+  multiple of the baseline grid. If~$s$ is our skip, we want
+  $\haccum+s=\lceil{\haccum\over b}\rceil$, which gives us a simple
+  expression for~$s$.
+  If the skip is non-zero, we insert the glue and update $\haccum\leftarrow\haccum+s$.
+\li Now the box is placed correctly, but the material may still continue past the
+  baseline, so we update $\haccum\leftarrow\haccum+d$, where~$d$ is the box depth.
+\medskip
+The function inputs and outputs are similar to those of |freeze_glue|.
+@<Lua functions@>={lua}
+local function align_hlist(head,hlist)
+  haccum = haccum + hlist.height
+  local skip = baselineskip*math.ceil(haccum/baselineskip) - haccum
+  if skip > 0 then
+    typeout(3,string.format("  ( shifting %fpt )",skip/2^16))
+    head = node.insert_before(head,hlist,ccbase.mkglue(skip,0,0,0,0))
+    haccum = haccum + skip
+  else
+    typeout(3,"  ( nop )")
+  end
+  haccum = haccum + hlist.depth
+  return head, hlist
+end
+@ With the last two functions we can go back to building the page. When
+the callback calling reason is |box|, \LuaTeX{} is inserting horizontal
+material. When it is |after_display|, \LuaTeX{} has inserted display-mode math.
+They are both processed by the same function, which goes through the contribution
+list, aligning any new material -- you should recall that the contribution list
+may contain already processed material, so we have to start from |lastprebox|,
+which was updated when the callback was called with a |pre_box| reason.
+@<Lua functions@>={lua}
+local function align_box(head)
+  if lastprebox then
+    head = lastprebox.next
+    prebox = nil
+  end
+  if loglevel>= 3 then ccshowbox.showheadlist(head,0,"  << .") end
+  local cur = head
+  while cur do
+    local fn = {
+        [ccbase.GLUE_TYPE]  = freeze_glue,
+        [ccbase.HLIST_TYPE] = align_hlist,
+      }[cur.id]
+    if fn then head, cur = fn(head,cur) end
+    cur = cur.next
+  end
+  if loglevel >= 3 then ccshowbox.showheadlist(head,0,"  >> .") end
+end
+@ @<Build page actions@>={lua}
+after_display  = align_box,
+box            = align_box,
+
+
