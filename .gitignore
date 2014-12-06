@@ -114,3 +114,4 @@ sympy-plots-for-*.tex/
 
 tex/plain/ccrusius/ccgrid_doc.tex
 *.swp
+tests/ccgrid01.pdf
