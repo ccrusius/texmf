@@ -30,15 +30,15 @@ enough hooks to make this possible.
 @ I will
 describe the algorithm in more detail later, but the idea is as follows:
 Firstly, we will keep track of the total height of what was already
-added to the output box. Let us call that value~$b_h$.
+added to the output box. Let us call that value~$\haccum$.
 Then, we process each element in the \TeX{} recent
 vertical contribution list.
 \medskip
 \li If the element is a glue with natural dimension~$g$, we remove all stretch
-from it, and update~$b_h\leftarrow b_h+g$.
-\li If the element is a horizontal list with height~$h_h$ and depth~$h_d$, we
-insert enough glue~$g$ before it to make $(b_h + g + h_h)\bmod x=0$ (in other
-words, to align its baseline with the grid), and update~$b_h\leftarrow b_h + g + h_d + h_h$.
+from it, and update~$\haccum\leftarrow \haccum+g$.
+\li If the element is a horizontal list with height~$h$ and depth~$d$, we
+insert enough glue~$g$ before it to make $(\haccum + g + h)\bmod y_{\rm grid}=0$ (in other
+words, to align its baseline with the grid), and update~$\haccum\leftarrow \haccum + g + h + d$.
 \medskip
 There are more things we need to do, but the basic idea should be clear:
 we want to only feed \TeX's output box with things that are already aligned
