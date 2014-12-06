@@ -55,7 +55,7 @@ end
 local function align_box(head)
   if lastprebox then
     head = lastprebox.next
-    prebox = nil
+    lastprebox = nil
   end
   if loglevel>= 3 then ccshowbox.showheadlist(head,0,"  << .") end
   local cur = head

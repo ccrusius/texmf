@@ -165,7 +165,7 @@ macro, which is called automatically when |ccgrid.tex| is read.
 to fix this value at the beginning of the document in a separate variable,
 since \TeX{} may change it mid-course. In Lua, we keep the value in the
 |baselineskip| variable, and the user can only change it by first
-setting |\baselineskip| accordingly, and then calling the \TeX
+setting |\baselineskip| accordingly, and then calling the \TeX{}
 |\ccgridseput| macro.
 @<Lua global variables@>={lua}
 local baselineskip = 0
@@ -321,7 +321,7 @@ our grid. In order to do that, we insert enough glue to make that happen.
   This is where the box baseline would be if we left it to \TeX{} alone.
 \li Then, we compute how much we have to add in skip to make $\haccum$ a
   multiple of the baseline grid. If~$s$ is our skip, we want
-  $\haccum+s=\lceil{\haccum\over b}\rceil$, which gives us a simple
+  $\haccum+s=b\lceil{\haccum\over b}\rceil$, which gives us a simple
   expression for~$s$.
   If the skip is non-zero, we insert the glue and update $\haccum\leftarrow\haccum+s$.
 \li Now the box is placed correctly, but the material may still continue past the
@@ -353,7 +353,7 @@ which was updated when the callback was called with a |pre_box| reason.
 local function align_box(head)
   if lastprebox then
     head = lastprebox.next
-    prebox = nil
+    lastprebox = nil
   end
   if loglevel>= 3 then ccshowbox.showheadlist(head,0,"  << .") end
   local cur = head
