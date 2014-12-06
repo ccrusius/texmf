@@ -6,7 +6,7 @@ end
 
 local function doluatex(filename)
     print("luatex "..filename)
-    local status = os.execute("luatex -halt-on-error -interaction=batchmode "..filename)
+    local status = os.execute("luatex -halt-on-error -interaction=nonstopmode "..filename)
     if status == 0 then status = true end -- Windows
     return status
 end
