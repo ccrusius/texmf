@@ -358,10 +358,9 @@ local function align_box(head)
   if loglevel>= 3 then ccshowbox.showheadlist(head,0,"  << .") end
   local cur = head
   while cur do
-    local fn = {
-        [ccbase.GLUE_TYPE]  = freeze_glue,
-        [ccbase.HLIST_TYPE] = align_hlist,
-      }[cur.id]
+    local actions = { [ccbase.GLUE_TYPE]  = freeze_glue,
+                      [ccbase.HLIST_TYPE] = align_hlist }
+    local fn = actions[cur.id]
     if fn then head, cur = fn(head,cur) end
     cur = cur.next
   end
