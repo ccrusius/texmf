@@ -1,10 +1,11 @@
 \secpagedepth=1
-@* Baseline grid.
+\def\li{\item{$\bullet$}}
+@** Baseline grid.
 This package modifies \TeX{}'s page building routine so that all the
 main baselines are on an equally spaced (by |\baselineskip|) grid.
 This not only mimicks traditional typesetting, but also results
 in a more pleasing document.
-\unorderedlist
+\medskip
 \li In multiple colum documents, where the problem is most visible,
 it is not uncommon for baselines not
 to align accross colums, resulting in an unbalanced layout.
@@ -16,7 +17,6 @@ This last problem is more visible on more ``transparent'' paper, but
 one can readily see it, for example, by looking at page~51 of the \TeX{}book
 against light: although the baselines of page~51 and~52 start aligned,
 towards the end of the page they are completely out of sync.
-\endunorderedlist
 @ The solution for this problem seems to have eluded all trials so far,
 and this is not surprising: one needs to change the page building process
 to make it work. In particular, at every point when \TeX{} is considering
@@ -30,21 +30,21 @@ Firstly, we will keep track of the total height of what was already
 added to the output box. Let us call that value~$b_h$.
 Then, we process each element in the \TeX{} recent
 vertical contribution list.
-\unorderedlist
+\medskip
 \li If the element is a glue with natural dimension~$g$, we remove all stretch
 from it, and update~$b_h\leftarrow b_h+g$.
 \li If the element is a horizontal list with height~$h_h$ and depth~$h_d$, we
 insert enough glue~$g$ before it to make $(b_h + g + h_h)\bmod x=0$ (in other
 words, to align its baseline with the grid), and update~$b_h\leftarrow b_h + g + h_d + h_h$.
-\endunorderedlist
+\medskip
 There are more things we need to do, but the basic idea should be clear:
 we want to only feed \TeX's output box with things that are already aligned
 to the baseline grid, and give \TeX{} no opportunity to change that by not
 giving it any room to stretch. One could say we want to make the output
 box look like an airplane's ``economy class'' section.
-@*2 Using this package.
+@* Using this package.
 This package is one part of my \TeX{} macro set, and has to be used inside it.
-This means you must be willing to use Eplain instead of \LaTeX, for example.
+This means you must be willing to use Eplain instead of La\TeX, for example.
 Making this package portable should not be too difficult if you wish to do so
 -- if you do, please publish your work so others can use it.
 
@@ -59,7 +59,7 @@ the package, but if your preamble changes things after that
 \input ccgrid
 % ... rest of preamble ...
 \ccgridsetup
-@* The package files.
+@** The package files.
 @ @<*{xxxccgrid.lua}@>=
 local exports = {}
 @<Lua global variables@>
@@ -80,7 +80,7 @@ return exports
 @ @<\TeX{} package postamble@>={tex}
 \makeatother
 \endinput
-@* Debugging.
+@** Debugging.
 Things did go wrong quite often with this, as baseline gridding is not something
 \TeX{} was designed to do, so I had to set up a decent enough debugging
 infrastructure. You will probably not be debugging this package, but the
@@ -115,7 +115,7 @@ to the |typeout| function below:
 local function typeout(lvl,str)
   if loglevel >= lvl then texio.write_nl(str) end
 end
-@* Displaying a baseline grid.
+@** Displaying a baseline grid.
 To enable the display of a baseline grid at every
 page, use the macro below. Doing this before a final build is a good idea, as
 it will quickly tell you whether things are working or not. The macro works
@@ -144,7 +144,7 @@ routine.
   \vfill}
 @ @<Baseline grid rule@>={tex}
 \kern-0.2pt\hrule height0.2pt depth0.2pt width\hsize\kern -0.2pt
-@* Parameter initialization.
+@** Parameter initialization.
 A gridded \TeX{} run must have some parameters properly initialized.
 This includes removing stretch from all known skips and sizing things
 such as |\vsize| properly. All of this is done in the |\ccgridsetup|
