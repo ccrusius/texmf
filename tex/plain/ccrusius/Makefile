@@ -1,4 +1,5 @@
-all: ccgrid.pdf ccgrid.lua ccgrid.tex
+all:: ccgrid.pdf ccgrid.lua ccgrid.tex
+all:: ccsections.pdf ccsections.lua ccsections.tex
 
 #
 # I don't know why I need -include-directory specified in the call to pdftex, but in my
@@ -24,4 +25,15 @@ ccgrid.pdf: ccgrid.ccw ../../../submodules/ccweb/bin/ccweave.lua
 
 ccgrid.tex ccgrid.lua: ccgrid.ccw ../../../submodules/ccweb/bin/cctangle.lua
 	lua ../../../submodules/ccweb/bin/cctangle.lua ccgrid.ccw
+
+ccsections.pdf: ccsections.ccw ../../../submodules/ccweb/bin/ccweave.lua
+	lua ../../../submodules/ccweb/bin/ccweave.lua -job-name=ccsections_doc ccsections.ccw
+	pdftex -halt-on-error -interaction=nonstopmode -include-directory=$(PWD) ccsections_doc
+	$(CP) ccsections_doc.pdf $@
+	$(RM) ccsections_doc.pdf
+
+ccsections.tex ccsections.lua: ccsections.ccw ../../../submodules/ccweb/bin/cctangle.lua
+	lua ../../../submodules/ccweb/bin/cctangle.lua ccsections.ccw
+
+
 

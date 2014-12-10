@@ -1,0 +1,64 @@
+\secpagedepth=1
+\def\li{\item{$\bullet$}}
+\def\title{CCSECTIONS}
+@** CCSECTIONS.
+An Eplain macro package adding sectioning commands.
+This goes very deep into the sub-section hierarchy because some documents
+outside of my control need that.
+@<*{ccsections.tex}@>=
+@<Global variables@>
+@<Macros@>
+@** Counters.
+@<Global variables@>={tex}
+\newcount\sectionno
+\newcount\subsectionno
+\newcount\subsubsectionno
+\newcount\subsubsubsectionno
+@ @<Macros@>={tex}
+\def\resetsectionno{\global\sectionno=0\resetsubsectionno}
+\def\resetsubsectionno{\global\subsectionno=0\resetsubsubsectionno}
+\def\resetsubsubsectionno{\global\subsubsectionno=0\resetsubsubsubsectionno}
+\def\resetsubsubsubsectionno{\global\subsubsubsectionno=0}
+@ @<Macros@>={tex}
+\def\thesectionno{\the\sectionno}
+\def\thesubsectionno{\thesectionno.\the\subsectionno}
+\def\thesubsubsectionno{\thesubsectionno.\the\subsubsectionno}
+\def\thesubsubsubsectionno{\thesubsubsectionno.\the\subsubsubsectionno}
+@** Sectioning.
+\medskip
+\li |#1| This is the type of the section. For a sub-section, for example,
+    this should be |subsection|.
+@<Macros@>={tex}
+\def\sectionentry#1#2{%
+  @<Update section counters@>
+  @<Write TOC entry@>
+}
+@ @<Update section counters@>={tex}
+\expandafter\advance\csname#1no\endcsname by1
+\csname resetsub#1no\endcsname
+@ @<Write TOC entry@>={tex}
+\edef\theno{\csname the#1no\endcsname}
+\writenumberedtocline{#1}{\theno}{#2}
+@ @<Macros@>={tex}
+\def\section#1{\sectionentry{section}{#1}}
+\def\subsection#1{\sectionentry{subsection}{#1}}
+\def\subsubsection#1{\sectionentry{subsubsection}{#1}}
+\def\subsubsubsection#1{\sectionentry{subsubsubsection}{#1}}
+@** Table of contents.
+As mentioned in the Eplain documentation, a proper table of contents design is
+bound to be dependent on the particular document. What goes below is some
+very simple macros to get things started on my documents.
+@<Macros@>={tex}
+\def\tocline#1{\hbox to\hsize{#1}}
+\def\tocsectionentry#1#2#3{\smallskip\line{\hbox to3em{\bf#1\hfil}{\bf #2}
+  \rm\leaders\hbox to .5em{.\hfil}\hfil
+  \bf #3}\par}
+\def\tocsubsectionentry#1#2#3{\line{\hbox to3em{#1\hfil}#2
+  \rm\leaders\hbox to .5em{.\hfil}\hfil
+  #3}\par}
+\def\tocsubsubsectionentry#1#2#3{\line{\kern3em\hbox to3.5em{#1\hfil}#2
+  \rm\leaders\hbox to .5em{.\hfil}\hfil
+  #3}\par}
+\def\tocsubsubsubsectionentry#1#2#3{\line{\kern3em\kern3.5em\hbox to4em{#1\hfil}#2
+  \rm\leaders\hbox to .5em{.\hfil}\hfil
+  #3}\par}
