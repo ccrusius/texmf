@@ -6,6 +6,10 @@
 \input eplain
 \directlua{ccbase = dofile(kpse.find_file("ccbase.lua"))}
 \makeatletter
+\newif\iftwoside
+\twosidefalse
+\newtoks\ccbase@prevoutput
+\ccbase@prevoutput=\expandafter{\the\output}
 \def\typeout{\immediate\write17}
 \def\makeescape#1{\catcode`#1=0 }
 \def\makebgroup#1{\catcode`#1=1 }
@@ -22,6 +26,14 @@
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+\output={%
+  \the\ccbase@prevoutput%
+  \iftwoside%
+    \global\advance\hoffset by -2\hoffset%
+    \global\advance\hoffset by \paperwidth%
+    \global\advance\hoffset by -\hsize%
+    \global\advance\hoffset by -2truein%
+  \fi}
 \expandafter\def\csname luacode\endcsname{
   \bgroup
   \makeother\{

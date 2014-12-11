@@ -8,6 +8,7 @@ This package provides the base macros and Lua module for my \LuaTeX{} setup.
 @* The package files.
 @<*{ccbase.tex}@>={tex}
 @<\TeX{} package preamble@>
+@<\TeX{} global variables@>
 @<\TeX{} macros@>
 @<\TeX{} package postamble@>
 @ @<*{ccbase.lua}@>={lua}
@@ -59,6 +60,40 @@ make the |/| an escape character.
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+@** Two-sided printing.
+To enable two-sided printint layout, where horiziontal margins alternate between
+odd and even pages, issue |\twosidetrue| after including |CCBASE|.
+@<\TeX{} global variables@>={tex}
+\newif\iftwoside
+\twosidefalse
+@ We're going to replace the output routine so it can change margins
+at every page. To do that, we save the old ouptut routine in |\ccbase@@prevoutput|.
+@<\TeX{} global variables@>={tex}
+\newtoks\ccbase@@prevoutput
+\ccbase@@prevoutput=\expandafter{\the\output}
+@ In \TeX{}, the |\hoffset| value is how much, past 1in of
+the left border, does the text area start. The amount of
+horizontal text space available is |\hsize|. Eplain also
+keeps the total paper width dimension in |\paperwidth|.
+With that, we have
+$$w = 1{\rm in} + h_{\rm offset} + h_{\rm size} + h_{\rm right},$$
+so that the right margin of a page is given by
+$$h_{\rm right} = w - 1{\rm in} - h_{\rm offset} - h_{\rm size}.$$
+We want this to be the new left margin, which is~$h_{\rm offset}+1{\rm in}$,
+so what we have to do is to
+replace, at
+every page, |\hoffset| with
+$$h_{\rm offset} \leftarrow w - h_{\rm size} - h_{\rm offset} - 2{\rm in}.$$
+The resulting output routine follows.
+@<\TeX{} macros@>={tex}
+\output={%
+  \the\ccbase@@prevoutput%
+  \iftwoside%
+    \global\advance\hoffset by -2\hoffset%
+    \global\advance\hoffset by \paperwidth%
+    \global\advance\hoffset by -\hsize%
+    \global\advance\hoffset by -2truein%
+  \fi}
 @** Inline Lua code.
 This comes directly from \LuaTeX's ``Writing Lua in TeX'' page,
 using the catcode routines defined before for simplicity. It introduces
@@ -92,7 +127,6 @@ Vim properly syntax-highlight |CCBASE| itself.
 \makeother\^^M %
 \long\gdef\doluacode#1^^M#2\endluacode{\directlua{#2}\egroup}%
 \egroup
-@** The output routine.
 @** LuaTeX nodes.
 \TeX{} entities are represented in \LuaTeX{} as nodes of different types.
 Here we define a few global variables that make type identification more
