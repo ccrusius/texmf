@@ -170,24 +170,26 @@ setting |\baselineskip| accordingly, and then calling the \TeX{}
 @<Lua global variables@>={lua}
 local baselineskip = 0
 @ @<Lua functions@>={lua}
-local function setgrid(x) baselineskip=x end
+local function setgrid(x)
+  baselineskip=ccbase.str2dim(x,"sp")
+end
 exports["setgrid"] = setgrid
 @ Some basic math has to be performed when setting these parameters,
 and that is done on the Lua side of things.
 @<Lua functions@>={lua}
 local function snapdown(x)
-  return baselineskip*math.floor(x/baselineskip)
+  return baselineskip*math.floor(ccbase.str2dim(x,"sp")/baselineskip)
 end
 exports["snapdown"] = snapdown
 local function freeze(x)
-  return (ccbase.spstr(ccbase.tosp(x))).." plus 0pt minus 0pt"
+  return (ccbase.dim2str(ccbase.str2dim(x,"pt"),"pt","pt")).." plus 0pt minus 0pt"
 end
 exports["freeze"] = freeze
 @ @<\TeX{} macros@>={tex}
 \def\ccgrid@@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}
 @ @<Remove glue from |\baselineskip| and set the Lua grid@>={tex}
 \global\baselineskip=\ccgrid@@freeze{\the\baselineskip}
-\directlua{ccgrid.setgrid(ccbase.tosp("\the\baselineskip"))}
+\directlua{ccgrid.setgrid("\the\baselineskip")}
 \typeout{ccgrid: baselineskip=\the\baselineskip}
 @ @<Remove glue from other \TeX{} skips@>={tex}
 \global\topskip=\ccgrid@@freeze{\the\topskip}
@@ -199,7 +201,7 @@ exports["freeze"] = freeze
 @ @<Set |\vsize| to a multiple of |\baselineskip|@>={tex}
 \global\advance\vsize by-\topskip
 \global\vsize=\directlua{tex.print(%
-  ccbase.spstr(ccgrid.snapdown(ccbase.tosp("\the\vsize"))))}
+  ccbase.dim2str(ccgrid.snapdown("\the\vsize"),"sp","sp"))}
 \global\advance\vsize by\topskip
 \typeout{ccgrid: vsize=\the\vsize}
 @ @<Set |\lineskip| and |\lineskiplimit|@>={tex}

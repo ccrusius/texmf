@@ -1,0 +1,153 @@
+\secpagedepth=1
+\def\li{\item{$\bullet$}}
+\def\LuaTeX{\hbox{Lua\TeX}}
+\def\title{CCBASE}
+\let\ifpdf\relax\input eplain
+@** CCBASE.
+This package provides the base macros and Lua module for my \LuaTeX{} setup.
+@* The package files.
+@<*{ccbase.tex}@>={tex}
+@<\TeX{} package preamble@>
+@<\TeX{} macros@>
+@<\TeX{} package postamble@>
+@ @<*{ccbase.lua}@>={lua}
+local exports = {}
+@<Lua global variables@>
+@<Lua functions@>
+return exports
+@ @<\TeX{} package preamble@>={tex}
+@<Include guards@>
+\input eplain
+\directlua{ccbase = dofile(kpse.find_file("ccbase.lua"))}
+\makeatletter
+@ @<\TeX{} package postamble@>={tex}
+\makeatother
+\endinput
+@ @<\TeX{} macros@>={tex}
+\def\typeout{\immediate\write17}
+@** Include guards.
+We define a command |\pragmaonce{id}| that expands to nothing the
+first time it is called, and to |\endinput| otherwise. This is
+useful to provide include guards to our package files. Since we want
+to include guard |CCBASE| itself, this is the first thing we define,
+and the first thing we use.
+@<Include guards@>={tex}
+\def\pragmaonce#1{
+  \csname pragmaonce#1\endcsname%
+  \global\expandafter\let\csname pragmaonce#1\endcsname=\endinput
+}
+\pragmaonce{ccbase}
+@** Catcodes and verbatim.
+The definitions below are copied from |tugboat.cmn|, including the
+documentation:
+The following allow for easier changes of category.  These require that
+the character be addressed as a control-sequence: e.g. |\makeescape\/| will
+make the |/| an escape character.
+@<\TeX{} macros@>={tex}
+\def\makeescape#1{\catcode`#1=0 }
+\def\makebgroup#1{\catcode`#1=1 }
+\def\makeegroup#1{\catcode`#1=2 }
+\def\makemath#1{\catcode`#1=3 }
+\def\makealign#1{\catcode`#1=4 }
+\def\makeeol#1{\catcode`#1=5 }
+\def\makeparm#1{\catcode`#1=6 }
+\def\makesup#1{\catcode`#1=7 }
+\def\makesub#1{\catcode`#1=8 }
+\def\makeignore#1{\catcode`#1=9 }
+\def\makespace#1{\catcode`#1=10 }
+\def\makeletter#1{\catcode`#1=11 }
+\def\makeother#1{\catcode`#1=12 }
+\def\makeactive#1{\catcode`#1=13 }
+\def\makecomment#1{\catcode`#1=14 }
+@** Inline Lua code.
+This comes directly from \LuaTeX's ``Writing Lua in TeX'' page,
+using the catcode routines defined before for simplicity. It introduces
+two macros, |\luacode| and |\endluacode|, that are used as a begin-end
+environment.
+
+To syntax highlight Lua code inside TeX, create a
+|$VIMFILES/after/syntax/plaintex.vim| file with the following contents:
+$$\vbox{\verbatim
+   unlet b:current_syntax
+   syn include @@LUA syntax/lua.vim
+
+   syn region luatex matchgroup=contextIdentifier
+       \ start='\\luacode'
+       \ end='\\endluacode'
+       \ contains=@@LUA@|endverbatim}$$
+The reason I define |\||luacode| below with an |\expandafter| is to make
+Vim properly syntax-highlight |CCBASE| itself.
+@<\TeX{} macros@>={tex}
+\expandafter\def\csname luacode\endcsname{
+  \bgroup
+  \makeother\{
+  \makeother\}
+  \makeother\^^M
+  \makeother\#
+  \makeother\~
+  \makeother\%
+  \doluacode
+}
+\bgroup
+\makeother\^^M %
+\long\gdef\doluacode#1^^M#2\endluacode{\directlua{#2}\egroup}%
+\egroup
+@** The output routine.
+@** LuaTeX nodes.
+\TeX{} entities are represented in \LuaTeX{} as nodes of different types.
+Here we define a few global variables that make type identification more
+efficient later on.
+@<Lua global variables@>=
+local GLUE_TYPE    = node.id("glue")
+local GLYPH_TYPE   = node.id("glyph")
+local HLIST_TYPE   = node.id("hlist")
+local KERN_TYPE    = node.id("kern")
+local MATH_TYPE    = node.id("math")
+local RULE_TYPE    = node.id("rule")
+local VLIST_TYPE   = node.id("vlist")
+local WHATSIT_TYPE = node.id("whatsit")
+@ @<Lua functions@>=
+@ @<Lua global variables@>={lua}
+exports["GLUE_TYPE"]    = GLUE_TYPE
+exports["GLYPH_TYPE"]   = GLYPH_TYPE
+exports["HLIST_TYPE"]   = HLIST_TYPE
+exports["KERN_TYPE"]    = KERN_TYPE
+exports["MATH_TYPE"]    = MATH_TYPE
+exports["RULE_TYPE"]    = RULE_TYPE
+exports["VLIST_TYPE"]   = VLIST_TYPE
+exports["WHATSIT_TYPE"] = WHATSIT_TYPE
+@** Dimensions.
+@<Lua global variables@>={lua}
+local dims = {
+  ["sp"] = 1,
+  ["pt"] = 2^16,
+  ["pc"] = 12*2^16,
+  ["bp"] = 72*2^16,
+  ["in"] = 72.27*2^16,
+}
+@ @<Lua functions@>={lua}
+local function dim2str(value,from,to)
+  return string.format("%f"..to,value*dims[from]/dims[to])
+end
+exports["dim2str"] = dim2str
+@ @<Lua functions@>={lua}
+local function str2dim(value,to)
+  value = value:gsub("^[ \t]*","")
+  value = value:gsub("[ \t].*$","")
+  local from = value:gsub("[-0-9.]+","")
+  value = value:gsub("[^-0-9.]+","")
+  return tonumber(value)*dims[from]/dims[to]
+end
+exports["str2dim"] = str2dim
+@ @<Lua functions@>={lua}
+local function mkglue(w,st,sto,sh,sho)
+  local glue = node.new(ccbase.GLUE_TYPE)
+  glue.spec = node.new("glue_spec")
+  glue.spec.width = w
+  glue.spec.stretch = st
+  glue.spec.stretch_order = sto
+  glue.spec.shrink = sh
+  glue.spec.shrink_order = sho
+  return glue
+end
+exports["mkglue"] = mkglue

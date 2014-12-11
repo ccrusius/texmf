@@ -5,9 +5,17 @@
 An Eplain macro package adding sectioning commands.
 This goes very deep into the sub-section hierarchy because some documents
 outside of my control need that.
-@<*{ccsections.tex}@>=
+@<*{ccsections.tex}@>={tex}
+@<\TeX{} package preamble@>
 @<Global variables@>
 @<Macros@>
+@<\TeX{} package postamble@>
+@ @<\TeX{} package preamble@>={tex}
+\input ccbase
+\pragmaonce{ccsections}
+\makeatletter
+@ @<\TeX{} package postamble@>={tex}
+\makeatother
 @** Counters.
 @<Global variables@>={tex}
 \newcount\sectionno
@@ -19,6 +27,7 @@ outside of my control need that.
 \def\resetsubsectionno{\global\subsectionno=0\resetsubsubsectionno}
 \def\resetsubsubsectionno{\global\subsubsectionno=0\resetsubsubsubsectionno}
 \def\resetsubsubsubsectionno{\global\subsubsubsectionno=0}
+\def\resetsubsubsubsubsectionno{}
 @ @<Macros@>={tex}
 \def\thesectionno{\the\sectionno}
 \def\thesubsectionno{\thesectionno.\the\subsectionno}
@@ -28,17 +37,35 @@ outside of my control need that.
 \medskip
 \li |#1| This is the type of the section. For a sub-section, for example,
     this should be |subsection|.
+\li |#2| This is the section title.
 @<Macros@>={tex}
 \def\sectionentry#1#2{%
   @<Update section counters@>
+  @<Typeset section@>
   @<Write TOC entry@>
 }
-@ @<Update section counters@>={tex}
+@ We have to both advance the current section counter, and
+reset the counters for the lower level sections.
+@<Update section counters@>={tex}
 \expandafter\advance\csname#1no\endcsname by1
 \csname resetsub#1no\endcsname
-@ @<Write TOC entry@>={tex}
 \edef\theno{\csname the#1no\endcsname}
+@ @<Write TOC entry@>={tex}
 \writenumberedtocline{#1}{\theno}{#2}
+@ The typesetting macros take two arguments:
+\medskip
+\li |#1| This is the section number.
+\li |#2| This is the section title.
+@<Macros@>={tex}
+\def\ts#1#2{
+  \line{\llap{\hss#1\quad}{#2}\hfil}\par
+}
+\def\typesetsection#1#2{\par\medskip\ts{\bf#1}{\bf#2}}
+\def\typesetsubsection#1#2{\par\medskip\ts{\bf#1}{\bf#2}}
+\def\typesetsubsubsection#1#2{\par\medskip\ts{\it#1}{\it#2}}
+\def\typesetsubsubsubsection#1#2{\par\medskip\ts{\it#1}{\it#2}}
+@ @<Typeset section@>={tex}
+\csname typeset#1\endcsname{\theno}{#2}
 @ @<Macros@>={tex}
 \def\section#1{\sectionentry{section}{#1}}
 \def\subsection#1{\sectionentry{subsection}{#1}}

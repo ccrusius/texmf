@@ -1,5 +1,7 @@
-all:: ccgrid.pdf ccgrid.lua ccgrid.tex
-all:: ccsections.pdf ccsections.lua ccsections.tex
+packages := ccbase ccgrid ccsections
+
+all:: $(addsuffix .pdf,$(packages))
+all:: $(addsuffix .tex,$(packages))
 
 #
 # I don't know why I need -include-directory specified in the call to pdftex, but in my
@@ -17,23 +19,13 @@ else
   RM := rm -f
 endif
 
-ccgrid.pdf: ccgrid.ccw ../../../submodules/ccweb/bin/ccweave.lua
-	lua ../../../submodules/ccweb/bin/ccweave.lua -job-name=ccgrid_doc ccgrid.ccw
-	pdftex -halt-on-error -interaction=nonstopmode -include-directory=$(PWD) ccgrid_doc
-	$(CP) ccgrid_doc.pdf $@
-	$(RM) ccgrid_doc.pdf
+%.pdf: %.ccw
+	lua ../../../submodules/ccweb/bin/ccweave.lua -job-name=$(@:.pdf=)_doc $<
+	pdftex -halt-on-error -interaction=nonstopmode -include-directory=$(PWD) $(@:.pdf=)_doc
+	$(CP) $(@:.pdf=)_doc.pdf $@
+	$(RM) $(@:.pdf=)_doc.pdf
 
-ccgrid.tex ccgrid.lua: ccgrid.ccw ../../../submodules/ccweb/bin/cctangle.lua
-	lua ../../../submodules/ccweb/bin/cctangle.lua ccgrid.ccw
-
-ccsections.pdf: ccsections.ccw ../../../submodules/ccweb/bin/ccweave.lua
-	lua ../../../submodules/ccweb/bin/ccweave.lua -job-name=ccsections_doc ccsections.ccw
-	pdftex -halt-on-error -interaction=nonstopmode -include-directory=$(PWD) ccsections_doc
-	$(CP) ccsections_doc.pdf $@
-	$(RM) ccsections_doc.pdf
-
-ccsections.tex ccsections.lua: ccsections.ccw ../../../submodules/ccweb/bin/cctangle.lua
-	lua ../../../submodules/ccweb/bin/cctangle.lua ccsections.ccw
-
+%.tex: %.ccw
+	lua ../../../submodules/ccweb/bin/cctangle.lua $<
 
 

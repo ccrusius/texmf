@@ -1,47 +1,12 @@
-%% @texfile{
-%%   author = "Cesar Crusius",
-%%   filename = "ccbase.tex",
-%%   docstring = "Base TeX macros",
-%% }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% \PRAGMAONCE
-%
-% Usage: \pragmaonce<id>
-%
-% Expands to \endinput after the first time it is called. Used to make sure
-% files are not included twice. See an example immediately after this
-% definition.
-%
-% We define this before anything else because we want to use it immediately.
-%
 \def\pragmaonce#1{
-  \csname pragmaonce@#1\endcsname%
-  \global\expandafter\let\csname pragmaonce@#1\endcsname=\endinput
+  \csname pragmaonce#1\endcsname%
+  \global\expandafter\let\csname pragmaonce#1\endcsname=\endinput
 }
 \pragmaonce{ccbase}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% \TYPEOUT
-%
-% From LaTeX. Write message in a single line.
-%
-\def\typeout{\immediate\write17}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Load Eplain format
-%
 \input eplain
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% CATCODES
-%
-% Directly from 'tugboat.cmn'
-%
-%  The following allow for easier changes of category.  These require that
-%  the character be addressed as a control-sequence: e.g. \makeescape\/ will
-%  make the / an escape character.
-%
+\directlua{ccbase = dofile(kpse.find_file("ccbase.lua"))}
+\makeatletter
+\def\typeout{\immediate\write17}
 \def\makeescape#1{\catcode`#1=0 }
 \def\makebgroup#1{\catcode`#1=1 }
 \def\makeegroup#1{\catcode`#1=2 }
@@ -57,27 +22,7 @@
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% LUACODE
-%
-% Usage: \luacode <lua code> \endluacode
-%
-% Directly from LuaTeX's "Writing Lua in TeX," using the catcode routines
-% defined above.
-%
-% To syntax highlight Lua code inside TeX, create a
-% $VIMFILES/after/syntax/plaintex.vim file with the following contents:
-%
-%   unlet b:current_syntax
-%   syn include @LUA syntax/lua.vim
-%
-%   syn region luatex matchgroup=contextIdentifier
-%       \ start='\\luacode'
-%       \ end='\\endluacode'
-%       \ contains=@LUA
-%
-\expandafter\def\csname luacode\endcsname{% \expandafter fixes vim syntax
+\expandafter\def\csname luacode\endcsname{
   \bgroup
   \makeother\{
   \makeother\}
@@ -91,68 +36,5 @@
 \makeother\^^M %
 \long\gdef\doluacode#1^^M#2\endluacode{\directlua{#2}\egroup}%
 \egroup
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% CCBASE LUA MODULE
-%
-\luacode
---------------------------------------------------------------------------------
---
--- LuaTeX node ids
---
-local GLUE_TYPE    = node.id("glue")
-local GLYPH_TYPE   = node.id("glyph")
-local HLIST_TYPE   = node.id("hlist")
-local KERN_TYPE    = node.id("kern")
-local MATH_TYPE    = node.id("math")
-local RULE_TYPE    = node.id("rule")
-local VLIST_TYPE   = node.id("vlist")
-local WHATSIT_TYPE = node.id("whatsit")
---------------------------------------------------------------------------------
---
--- Basic functions
---
--- tosp: Tries to get a scaled point dimensioned numeric value out of something.
--- spstr: Returns a TeX-friently string with the value of "x" in scaled points.
--- mkglue: Create a new glue node
---
-local function tosp(x)
-  if type(x) == "number" then return x
-  elseif type(x) == "string" then return tonumber((string.gsub(x,"pt.*","")))*2^16
-  else assert(false,"ccbase.tosp: Unrecognized type "..type(x))
-  end
-end
-
-local function spstr(x) return string.format("%fsp",x) end
-
-local function mkglue(w,st,sto,sh,sho)
-  local glue = node.new(ccbase.GLUE_TYPE)
-  glue.spec = node.new("glue_spec")
-  glue.spec.width = w
-  glue.spec.stretch = st
-  glue.spec.stretch_order = sto
-  glue.spec.shrink = sh
-  glue.spec.shrink_order = sho
-  return glue
-end
-
-
---
--- Export "ccbase" module
---
-ccbase = {
-  GLUE_TYPE    = GLUE_TYPE,
-  GLYPH_TYPE   = GLYPH_TYPE,
-  HLIST_TYPE   = HLIST_TYPE,
-  KERN_TYPE    = KERN_TYPE,
-  MATH_TYPE    = MATH_TYPE,
-  RULE_TYPE    = RULE_TYPE,
-  VLIST_TYPE   = VLIST_TYPE,
-  WHATSIT_TYPE = WHATSIT_TYPE,
-  spstr        = spstr,
-  tosp         = tosp,
-  mkglue       = mkglue,
-}
-\endluacode
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatother
 \endinput

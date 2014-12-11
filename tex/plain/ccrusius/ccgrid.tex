@@ -26,7 +26,7 @@
 \def\ccgrid@freeze#1{\directlua{tex.print(ccgrid.freeze("#1"))}}
 \def\ccgridsetup{
   \global\baselineskip=\ccgrid@freeze{\the\baselineskip}
-  \directlua{ccgrid.setgrid(ccbase.tosp("\the\baselineskip"))}
+  \directlua{ccgrid.setgrid("\the\baselineskip")}
   \typeout{ccgrid: baselineskip=\the\baselineskip}
   \global\topskip=\ccgrid@freeze{\the\topskip}
   \global\parskip=\ccgrid@freeze{\the\parskip}
@@ -36,7 +36,7 @@
   \global\belowdisplayshortskip=\ccgrid@freeze{\the\belowdisplayshortskip}
   \global\advance\vsize by-\topskip
   \global\vsize=\directlua{tex.print(%
-    ccbase.spstr(ccgrid.snapdown(ccbase.tosp("\the\vsize"))))}
+    ccbase.dim2str(ccgrid.snapdown("\the\vsize"),"sp","sp"))}
   \global\advance\vsize by\topskip
   \typeout{ccgrid: vsize=\the\vsize}
   \global\lineskip=0pt

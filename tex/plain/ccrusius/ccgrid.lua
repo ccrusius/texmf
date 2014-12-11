@@ -8,14 +8,16 @@ exports["setloglevel"] = setloglevel
 local function typeout(lvl,str)
   if loglevel >= lvl then texio.write_nl(str) end
 end
-local function setgrid(x) baselineskip=x end
+local function setgrid(x)
+  baselineskip=ccbase.str2dim(x,"sp")
+end
 exports["setgrid"] = setgrid
 local function snapdown(x)
-  return baselineskip*math.floor(x/baselineskip)
+  return baselineskip*math.floor(ccbase.str2dim(x,"sp")/baselineskip)
 end
 exports["snapdown"] = snapdown
 local function freeze(x)
-  return (ccbase.spstr(ccbase.tosp(x))).." plus 0pt minus 0pt"
+  return (ccbase.dim2str(ccbase.str2dim(x,"pt"),"pt","pt")).." plus 0pt minus 0pt"
 end
 exports["freeze"] = freeze
 local function output(head)
