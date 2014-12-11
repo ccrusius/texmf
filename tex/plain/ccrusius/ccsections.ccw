@@ -18,6 +18,7 @@ outside of my control need that.
 \makeatother
 @** Counters.
 @<Global variables@>={tex}
+\newcount\ccsections@@count\ccsections@@count=0
 \newcount\sectionno
 \newcount\subsectionno
 \newcount\subsubsectionno
@@ -50,15 +51,22 @@ reset the counters for the lower level sections.
 \expandafter\advance\csname#1no\endcsname by1
 \csname resetsub#1no\endcsname
 \edef\theno{\csname the#1no\endcsname}
+\advance\ccsections@@count by1
 @ @<Write TOC entry@>={tex}
 \writenumberedtocline{#1}{\theno}{#2}
+\expandafter\xrdef{pagesub\the\ccsections@@count}
 @ The typesetting macros take two arguments:
 \medskip
 \li |#1| This is the section number.
 \li |#2| This is the section title.
 @<Macros@>={tex}
+\def\oddsec#1#2{\line{\hfil{#2}\rlap{\quad#1\hss}}\nobreak\par\nobreak}
+\def\evensec#1#2{\line{\llap{\hss#1\quad}{#2}\hfil}\nobreak\par\nobreak}
 \def\ts#1#2{
-  \line{\llap{\hss#1\quad}{#2}\hfil}\par
+  \iftwoside
+    \expandafter\ifodd\ccxrefn[0]{pagesub\the\ccsections@@count}\oddsec{#1}{#2}%
+    \else\evensec{#1}{#2}\fi%
+  \else\oddsec{#1}{#2}\fi
 }
 \def\typesetsection#1#2{\par\medskip\ts{\bf#1}{\bf#2}}
 \def\typesetsubsection#1#2{\par\medskip\ts{\bf#1}{\bf#2}}

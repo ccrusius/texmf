@@ -60,6 +60,21 @@ make the |/| an escape character.
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+@** Cross-references.
+Eplain defines a couple of macros for cross-referencing pages, but none
+of them produce a page number that can be used as an argument to |\ifodd|,
+for example. Using Eplain's internal |\readauxfile| and |\xrlabel|,
+we can easily create one. The first argument is what the macro should
+expand to if the label is not defined.
+optional parameter specifying the default value.
+@<\TeX{} macros@>={tex}
+\def\ccxrefn[#1]#2{
+  \readauxfile
+  \expandafter \ifx\csname\xrlabel{#2}\endcsname\relax#1
+  \else\csname\xrlabel{#2}\endcsname
+  \fi
+}
+
 @** Two-sided printing.
 To enable two-sided printint layout, where horiziontal margins alternate between
 odd and even pages, issue |\twosidetrue| after including |CCBASE|.

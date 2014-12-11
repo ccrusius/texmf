@@ -26,6 +26,13 @@
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+\def\ccxrefn[#1]#2{
+  \readauxfile
+  \expandafter \ifx\csname\xrlabel{#2}\endcsname\relax#1
+  \else\csname\xrlabel{#2}\endcsname
+  \fi
+}
+
 \output={%
   \the\ccbase@prevoutput%
   \iftwoside%
