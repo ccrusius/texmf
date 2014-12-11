@@ -26,6 +26,8 @@
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+\def\verb{\begingroup\uncatcodespecials\@ccbaseverb}
+\def\@ccbaseverb#1{\tt\def\@@ccbaseverb##1#1{##1\endgroup}\@@ccbaseverb}
 \def\ccxrefn[#1]#2{
   \readauxfile
   \expandafter \ifx\csname\xrlabel{#2}\endcsname\relax#1

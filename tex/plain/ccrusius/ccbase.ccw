@@ -60,6 +60,11 @@ make the |/| an escape character.
 \def\makeother#1{\catcode`#1=12 }
 \def\makeactive#1{\catcode`#1=13 }
 \def\makecomment#1{\catcode`#1=14 }
+@ Eplain defines the |\verbatim .. @|endverbatim| construction, but it is
+much more convenient to use the \LaTeX-like |\verb+...+| one.
+@<\TeX{} macros@>={tex}
+\def\verb{\begingroup\uncatcodespecials\@@ccbaseverb}
+\def\@@ccbaseverb#1{\tt\def\@@@@ccbaseverb##1#1{##1\endgroup}\@@@@ccbaseverb}
 @** Cross-references.
 Eplain defines a couple of macros for cross-referencing pages, but none
 of them produce a page number that can be used as an argument to |\ifodd|,
