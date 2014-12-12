@@ -17,8 +17,8 @@ outside of my control need that.
 @ @<\TeX{} package postamble@>={tex}
 \makeatother
 @** Counters.
+The main set of counters are those providing section numbering.
 @<Global variables@>={tex}
-\newcount\ccsections@@count\ccsections@@count=0
 \newcount\sectionno
 \newcount\subsectionno
 \newcount\subsubsectionno
@@ -35,11 +35,18 @@ outside of my control need that.
 \def\thesubsubsectionno{\thesubsectionno.\the\subsubsectionno}
 \def\thesubsubsubsectionno{\thesubsubsectionno.\the\subsubsubsectionno}
 @** Sectioning.
-\medskip
-\li |#1| This is the type of the section. For a sub-section, for example,
+We are going to typeset our sections differently depending on whether the
+page number is odd or even. In order to do that, we must use a cross-reference
+mechanism -- \TeX{} does not decide on the page number until it is too late
+for macros to act. We initialize the counter and the |aux| file by creating
+a reference to ``section~0.''
+@<Global variables@>={tex}
+\newcount\ccsections@@count\ccsections@@count=0
+\expandafter\xrdef{pagesub\the\ccsections@@count}
+@ \li |#1| This is the type of the section. For a sub-section, for example,
     this should be |subsection|.
 \li |#2| This is the section title.
-@<Macros@>={tex}
+@ @<Macros@>={tex}
 \def\sectionentry#1#2{%
   @<Update section counters@>
   @<Typeset section@>
