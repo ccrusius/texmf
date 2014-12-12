@@ -43,7 +43,7 @@ outside of my control need that.
 \def\sectionentry#1#2{%
   @<Update section counters@>
   @<Typeset section@>
-  @<Write TOC entry@>
+  @<Write TOC entry@>\nobreak
 }
 @ We have to both advance the current section counter, and
 reset the counters for the lower level sections.
@@ -64,7 +64,8 @@ reset the counters for the lower level sections.
 \def\evensec#1#2{\line{\llap{\hss#1\quad}{#2}\hfil}\nobreak\par\nobreak}
 \def\ts#1#2{
   \iftwoside
-    \expandafter\ifodd\ccxrefn[0]{pagesub\the\ccsections@@count}\oddsec{#1}{#2}%
+    \expandafter\ifodd\ccxrefn[0]{pagesub\the\ccsections@@count}%
+      \oddsec{#1}{#2}%
     \else\evensec{#1}{#2}\fi%
   \else\oddsec{#1}{#2}\fi
 }

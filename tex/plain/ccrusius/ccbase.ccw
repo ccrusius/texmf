@@ -68,13 +68,13 @@ much more convenient to use the \LaTeX-like |\verb+...+| one.
 @** Cross-references.
 Eplain defines a couple of macros for cross-referencing pages, but none
 of them produce a page number that can be used as an argument to |\ifodd|,
-for example. Using Eplain's internal |\readauxfile| and |\xrlabel|,
-we can easily create one. The first argument is what the macro should
+for example. Using Eplain's internal |\xrlabel|, however,
+we can easily create one.
+
+The first argument to |\ccxrefn| is what the macro should
 expand to if the label is not defined.
-optional parameter specifying the default value.
 @<\TeX{} macros@>={tex}
 \def\ccxrefn[#1]#2{
-  \readauxfile
   \expandafter \ifx\csname\xrlabel{#2}\endcsname\relax#1
   \else\csname\xrlabel{#2}\endcsname
   \fi

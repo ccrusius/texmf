@@ -29,7 +29,6 @@
 \def\verb{\begingroup\uncatcodespecials\@ccbaseverb}
 \def\@ccbaseverb#1{\tt\def\@@ccbaseverb##1#1{##1\endgroup}\@@ccbaseverb}
 \def\ccxrefn[#1]#2{
-  \readauxfile
   \expandafter \ifx\csname\xrlabel{#2}\endcsname\relax#1
   \else\csname\xrlabel{#2}\endcsname
   \fi
