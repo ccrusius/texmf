@@ -4,7 +4,7 @@
 @** CCSECTIONS.
 An Eplain macro package adding sectioning commands.
 This goes very deep into the sub-section hierarchy because some documents
-outside of my control need that.
+outside of my control need that. RFC5277, for example, needs it.
 @<*{ccsections.tex}@>={tex}
 @<\TeX{} package preamble@>
 @<Global variables@>
@@ -23,17 +23,20 @@ The main set of counters are those providing section numbering.
 \newcount\subsectionno
 \newcount\subsubsectionno
 \newcount\subsubsubsectionno
+\newcount\subsubsubsubsectionno
 @ @<Macros@>={tex}
 \def\resetsectionno{\global\sectionno=0\resetsubsectionno}
 \def\resetsubsectionno{\global\subsectionno=0\resetsubsubsectionno}
 \def\resetsubsubsectionno{\global\subsubsectionno=0\resetsubsubsubsectionno}
-\def\resetsubsubsubsectionno{\global\subsubsubsectionno=0}
-\def\resetsubsubsubsubsectionno{}
+\def\resetsubsubsubsectionno{\global\subsubsubsectionno=0\resetsubsubsubsubsectionno}
+\def\resetsubsubsubsubsectionno{\global\subsubsubsubsectionno=0\resetsubsubsubsubsubsectionno}
+\def\resetsubsubsubsubsubsectionno{}
 @ @<Macros@>={tex}
 \def\thesectionno{\the\sectionno}
 \def\thesubsectionno{\thesectionno.\the\subsectionno}
 \def\thesubsubsectionno{\thesubsectionno.\the\subsubsectionno}
 \def\thesubsubsubsectionno{\thesubsubsectionno.\the\subsubsubsectionno}
+\def\thesubsubsubsubsectionno{\thesubsubsubsectionno.\the\subsubsubsubsectionno}
 @** Sectioning.
 We are going to typeset our sections differently depending on whether the
 page number is odd or even. In order to do that, we must use a cross-reference
@@ -80,6 +83,7 @@ reset the counters for the lower level sections.
 \def\typesetsubsection#1#2{\par\medskip\ts{\bf#1}{\bf#2}}
 \def\typesetsubsubsection#1#2{\par\medskip\ts{\it#1}{\it#2}}
 \def\typesetsubsubsubsection#1#2{\par\medskip\ts{\it#1}{\it#2}}
+\def\typesetsubsubsubsubsection#1#2{\par\medskip\ts{\it#1}{\it#2}}
 @ @<Typeset section@>={tex}
 \csname typeset#1\endcsname{\theno}{#2}
 @ @<Macros@>={tex}
@@ -87,6 +91,7 @@ reset the counters for the lower level sections.
 \def\subsection#1{\sectionentry{subsection}{#1}}
 \def\subsubsection#1{\sectionentry{subsubsection}{#1}}
 \def\subsubsubsection#1{\sectionentry{subsubsubsection}{#1}}
+\def\subsubsubsubsection#1{\sectionentry{subsubsubsubsection}{#1}}
 @** Table of contents.
 As mentioned in the Eplain documentation, a proper table of contents design is
 bound to be dependent on the particular document. What goes below is some
@@ -103,5 +108,8 @@ very simple macros to get things started on my documents.
   \rm\leaders\hbox to .5em{.\hfil}\hfil
   #3}\par}
 \def\tocsubsubsubsectionentry#1#2#3{\line{\kern3em\kern3.5em\hbox to4em{#1\hfil}#2
+  \rm\leaders\hbox to .5em{.\hfil}\hfil
+  #3}\par}
+\def\tocsubsubsubsubsectionentry#1#2#3{\line{\kern3em\kern3.5em\kern4em\hbox to4em{#1\hfil}#2
   \rm\leaders\hbox to .5em{.\hfil}\hfil
   #3}\par}
