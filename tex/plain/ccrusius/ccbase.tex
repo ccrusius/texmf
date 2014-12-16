@@ -34,6 +34,22 @@
   \fi
 }
 
+\let\@btxonecitation\@onecitation%
+\def\@onecitation#1\@@{%
+  \expandafter\@btxonecitation%
+    \directlua{local p=string.char(37)
+               local r,n=string.gsub("#1",p.."[[^]]+"..p.."]","")
+               tex.print(r)}\@@%
+  \directlua{local p=string.char(37)
+             local r,n=string.gsub("#1",p.."[([^]]+)"..p.."].*",p.."1")
+             if n > 0 then tex.print(r) end}%
+}
+\let\@btxnocite=\nocite
+\def\nocite#1{%
+  \@btxnocite{\directlua{local p=string.char(37)
+                          local r,n=string.gsub("#1",p.."[[^]]+"..p.."]","")
+                          tex.print(r)}}%
+}
 \output={%
   \the\ccbase@prevoutput%
   \iftwoside%

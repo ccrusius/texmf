@@ -80,6 +80,41 @@ expand to if the label is not defined.
   \fi
 }
 
+@** Bibliography.
+There are situations when I need to cite multiple references, while
+pointing to different page or section numbers for each. The optional
+argument to |\cite| only gives me one note, so I can't use that. The
+macros below allow me to add optional arguments to each of the
+|\cite| arguments. They are built by reverse-engineering |btxmac|'s
+|\@@cite| macro, which does all the processing.
+@ The first thing we need to modify is
+the |\@@onecitation| macro, which is the one that does the printing.
+We redefine it to accept an optional argument, just like |\cite|,
+and print it after the reference itself.
+@<\TeX{} macros@>={tex}
+\let\@@btxonecitation\@@onecitation%
+\def\@@onecitation#1\@@@@{%
+  \expandafter\@@btxonecitation%
+    \directlua{@<Remove optional argument from |#1| list@>}\@@@@%
+  \directlua{@<Get optional argument from |#1|@>}%
+}
+@ String processing is done better in Lua:
+@<Remove optional argument from |#1| list@>={lua}
+local p=string.char(37)
+local r,n=string.gsub("#1",p.."[[^]]+"..p.."]","")
+tex.print(r)
+@ @<Get optional argument from |#1|@>={lua}
+local p=string.char(37)
+local r,n=string.gsub("#1",p.."[([^]]+)"..p.."].*",p.."1")
+if n > 0 then tex.print(r) end
+@ Next, we need to modify the |\nocite| macro, which is called
+by |\@@cite| with the raw list of arguments. All we have to do
+here is to remove the optional arguments from the list.
+@<\TeX{} macros@>={tex}
+\let\@@btxnocite=\nocite
+\def\nocite#1{%
+  \@@btxnocite{\directlua{@<Remove optional argument from |#1| list@>}}%
+}
 @** Two-sided printing.
 To enable two-sided printint layout, where horiziontal margins alternate between
 odd and even pages, issue |\twosidetrue| after including |CCBASE|.

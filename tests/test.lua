@@ -79,5 +79,69 @@ Page 4: \the\hoffset, \the\hsize
   os.remove(name..".pdf")
 end
 
+function test_citargs()
+  local name = "citeargs"
+  --
+  -- Write .bib file
+  --
+  local file = io.open(name..".bib","w+")
+  assert(file,"Could not open '"..name..".bib' for writing.")
+  file:write([[
+  @article{small,
+    author = {Freely, I.P.}, title = {A small paper}, journal = {The journal of small papers},
+    year = 1997, volume = {-1}, note = {to appear},
+  }
+
+  @article{big,
+    author = {Jass, Hugh}, title = {A big paper}, journal = {The journal of big papers},
+    year = 7991, volume = {MCMXCVII},
+  }
+  ]])
+  file:close()
+  --
+  -- Write .tex file
+  --
+  file = io.open(name..".tex","w+")
+  assert(file,"Could not open '"..name..".tex' for writing.")
+  file:write([[
+\input ccbase
+\input ccshowbox
+\luacode
+local function output(head)
+  ccshowbox.showheadlist(head,2,".")
+  return true
+end
+callback.register("pre_output_filter",output)
+\endluacode
+A few citations to test:
+\cite{small}
+\cite{small,big}
+\cite{[p3]small}
+\cite{[p3]small,big}
+\cite{[p3]small,[p4]big}
+\cite{small,[p4]big}\hfil\par
+\bibliographystyle{plain}
+\bibliography{./citeargs}
+\bye
+]])
+  file:close()
+  --
+  -- Test
+  --
+  assert(doluatex(name)==true)
+  assert(dobibtex(name)==true)
+  assert(doluatex(name)==true)
+  assert(doluatex(name)==true)
+  assert(haslines(name..".aux",name..".auxref"))
+  assert(haslines(name..".log",name..".logref"))
+  os.remove(name..".tex")
+  os.remove(name..".log")
+  os.remove(name..".pdf")
+  os.remove(name..".bib")
+  os.remove(name..".blg")
+  os.remove(name..".bbl")
+  os.remove(name..".aux")
+end
+
 lu = LuaUnit.new()
 os.exit(lu:runSuite())

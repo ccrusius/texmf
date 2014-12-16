@@ -1,0 +1,10 @@
+\citation{small}
+\citation{small,big}
+\citation{small}
+\citation{small,big}
+\citation{small,big}
+\citation{small,big}
+\bibstyle{plain}
+\bibdata{./citeargs}
+\@citedef{small}{1}
+\@citedef{big}{2}
